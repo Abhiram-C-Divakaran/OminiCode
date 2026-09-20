@@ -1,0 +1,119 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-brand-cyan: #00d4ff;
+  --color-brand-cyan-light: #80eaff;
+  --color-brand-cyan-dark: #00a8cc;
+  --color-brand-purple: #7c3aed;
+  --color-brand-purple-light: #a78bfa;
+  
+  --color-bg-dark-950: #080a12;
+  --color-bg-dark-900: #0d0f1a;
+  --color-bg-dark-800: #111320;
+  --color-bg-dark-700: #161929;
+}
+
+/* Base resets & scrollbars */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: #080a12;
+  color: #e2e8f8;
+  font-family: var(--font-sans);
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(8, 10, 18, 0.4);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.15);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 255, 0.35);
+}
+
+/* Custom CSS Helpers */
+.glass-panel {
+  background: rgba(13, 15, 26, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 212, 255, 0.08);
+}
+
+.glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+}
+
+.shadow-glow {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+}
+
+.border-glow {
+  border-color: rgba(0, 212, 255, 0.25);
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.1);
+}
+
+/* Custom syntax classes if needed, or Monaco theme styling */
+.monaco-editor-container {
+  border-radius: 4px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Animated particle grid effect for the page background */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.05);
+  }
+}
+
+.cosmic-bg {
+  position: fixed;
+  inset: 0;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(124, 58, 237, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(0, 212, 255, 0.08) 0%, transparent 40%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.pulse-ambient {
+  animation: pulseGlow 10s ease-in-out infinite;
+}
+
+/* Shake Screen animations for physics heavy impacts & explosions */
+@keyframes shake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-3px, -2px) rotate(-0.5deg); }
+  30% { transform: translate(4px, 3px) rotate(1deg); }
+  50% { transform: translate(-4px, 2px) rotate(-1deg); }
+  70% { transform: translate(3px, 1px) rotate(0.5deg); }
+  90% { transform: translate(-2px, -1px) rotate(-0.5deg); }
+}
+
+.animate-shake {
+  animation: shake 0.35s cubic-bezier(.36,.07,.19,.97) both;
+}
+

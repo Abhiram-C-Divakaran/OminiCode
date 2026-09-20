@@ -1,0 +1,122 @@
+{
+  "entities": {
+    "Organization": {
+      "title": "Organization",
+      "description": "A tenant in the system.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["name", "createdAt"]
+    },
+    "OrganizationMetrics": {
+      "title": "OrganizationMetrics",
+      "description": "Materialized metrics for the organization overview.",
+      "type": "object",
+      "properties": {
+        "securityScore": { "type": "number" },
+        "securityScoreConfidence": { "type": "number" },
+        "critical": { "type": "number" },
+        "high": { "type": "number" },
+        "medium": { "type": "number" },
+        "low": { "type": "number" },
+        "newRegressions": { "type": "number" },
+        "repositoriesAtRisk": { "type": "number" },
+        "exposedSecrets": { "type": "number" },
+        "vulnerableDependencies": { "type": "number" },
+        "scanCoverage": { "type": "number" },
+        "slaViolations": { "type": "number" },
+        "meanTimeToRemediationHours": { "type": "number" },
+        "generatedAt": { "type": "number" }
+      },
+      "required": ["securityScore", "critical", "high", "medium", "low"]
+    },
+    "Repository": {
+      "title": "Repository",
+      "description": "A source code repository.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "ownerTeam": { "type": "string" },
+        "riskLevel": { "type": "string", "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "HEALTHY", "UNKNOWN"] },
+        "securityScore": { "type": "number" },
+        "criticalCount": { "type": "number" },
+        "highCount": { "type": "number" },
+        "mediumCount": { "type": "number" },
+        "secretsCount": { "type": "number" },
+        "dependencyRisk": { "type": "string" },
+        "coverage": { "type": "number" },
+        "lastScanAt": { "type": "number" },
+        "scanStatus": { "type": "string" }
+      },
+      "required": ["name", "ownerTeam", "riskLevel"]
+    },
+    "Finding": {
+      "title": "Finding",
+      "description": "A detected vulnerability or security issue.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "repositoryId": { "type": "string" },
+        "repositoryName": { "type": "string" },
+        "severity": { "type": "string", "enum": ["critical", "high", "medium", "low", "info"] },
+        "confidence": { "type": "number" },
+        "file": { "type": "string" },
+        "line": { "type": "number" },
+        "language": { "type": "string" },
+        "cwe": { "type": "string" },
+        "owasp": { "type": "string" },
+        "sourceEngine": { "type": "string" },
+        "team": { "type": "string" },
+        "environment": { "type": "string" },
+        "status": { "type": "string", "enum": ["OPEN", "IN_PROGRESS", "FIXED", "ACCEPTED_RISK", "FALSE_POSITIVE", "SUPPRESSED", "REOPENED"] },
+        "isNewRegression": { "type": "boolean" },
+        "assignee": { "type": "string" },
+        "dueAt": { "type": "number" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["title", "repositoryId", "severity", "status", "createdAt", "updatedAt"]
+    },
+    "SecurityEvent": {
+      "title": "SecurityEvent",
+      "description": "An event in the critical action queue or activity feed.",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "severity": { "type": "string" },
+        "title": { "type": "string" },
+        "repositoryName": { "type": "string" },
+        "team": { "type": "string" },
+        "environment": { "type": "string" },
+        "findingId": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "status": { "type": "string" }
+      },
+      "required": ["type", "title", "createdAt"]
+    }
+  },
+  "firestore": {
+    "organizations/{orgId}": {
+      "schema": { "$ref": "#/entities/Organization" },
+      "description": "Root tenant object."
+    },
+    "organizations/{orgId}/metrics/{metricId}": {
+      "schema": { "$ref": "#/entities/OrganizationMetrics" },
+      "description": "Materialized metrics."
+    },
+    "organizations/{orgId}/repositories/{repoId}": {
+      "schema": { "$ref": "#/entities/Repository" },
+      "description": "Repositories belonging to the org."
+    },
+    "organizations/{orgId}/findings/{findingId}": {
+      "schema": { "$ref": "#/entities/Finding" },
+      "description": "Findings belonging to the org."
+    },
+    "organizations/{orgId}/events/{eventId}": {
+      "schema": { "$ref": "#/entities/SecurityEvent" },
+      "description": "Security events for the org."
+    }
+  }
+}
