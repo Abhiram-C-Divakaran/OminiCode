@@ -4,8 +4,8 @@ Phases are gated by review. Work in a later phase must not be inferred from an e
 
 | Phase | Scope | Status |
 | --- | --- | --- |
-| 1 | Foundation & repository cleanup | Complete; awaiting review (see PHASE1_REPORT.md) |
-| 2 | Authentication | Not started |
+| 1 | Foundation & repository cleanup | Complete (see PHASE1_REPORT.md) |
+| 2 | Authentication | Implemented; emulator checks pass; live Google/provider acceptance pending |
 | 3 | Organizations & authorization | Not started |
 | 4 | Secure GitHub integration | Not started |
 | 5 | Persistence/data architecture | Not started |
@@ -17,7 +17,7 @@ Phases are gated by review. Work in a later phase must not be inferred from an e
 | 11 | DevOps integration | Simulation present; real providers not started |
 | 12 | Collaboration features | Prototype present; persistence/permissions not started |
 | 13 | Responsive/mobile UX | Partial layouts present; dedicated editor work not started |
-| 14 | Automated testing | Existing path checks only; comprehensive suite not started |
+| 14 | Automated testing | Auth regression and workspace checks present; comprehensive suite not started |
 | 15 | CI/CD | Not started |
 | 16 | Production hardening | Not started |
 
@@ -29,5 +29,5 @@ Only mark Phase 1 complete after every gate passes. Simulated/cloud-dependent be
 
 ## Next review
 
-After Phase 1 acceptance, stop. Phase 2 should focus exclusively on real authentication and session security. It requires a separate reviewed implementation request. RBAC, secure GitHub credential storage, scanner engines, payments, subscriptions, provider integrations, containers, CI/CD and deployment remain out of Phase 1 scope.
+Phase 2 implementation stops here for review. Do not mark it complete until live Firebase provider checks, including Google sign-in, pass. Do not begin Phase 3 automatically. RBAC, secure GitHub credential storage, scanner engines, payments, subscriptions, provider integrations, containers, CI/CD and deployment remain out of Phase 1 scope.
 

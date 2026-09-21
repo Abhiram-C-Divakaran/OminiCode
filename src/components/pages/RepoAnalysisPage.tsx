@@ -1,3 +1,4 @@
+import { apiFetch } from "../../services/api";
 
 import { ArrowRight,FileCode,FolderGit2,GitCommit,Github,Loader2 } from 'lucide-react';
 import { useEffect,useState } from 'react';
@@ -30,7 +31,7 @@ export default function RepoAnalysisPage() {
 
   const connectGitHub = async () => {
     try {
-      const res = await fetch('/api/auth/github/url');
+      const res = await apiFetch('/api/auth/github/url');
       const data = await res.json();
       window.open(data.url, 'gh_oauth', 'width=600,height=700');
     } catch (e) {
@@ -41,7 +42,7 @@ export default function RepoAnalysisPage() {
   const fetchRepos = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/github/repos', {
+      const res = await apiFetch('/api/github/repos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token })
@@ -73,7 +74,7 @@ export default function RepoAnalysisPage() {
 
   const analyzeFile = async (file: any) => {
     try {
-      const res = await fetch('/api/github/file', {
+      const res = await apiFetch('/api/github/file', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, owner: selectedRepo.owner.login, repo: selectedRepo.name, path: file.path })

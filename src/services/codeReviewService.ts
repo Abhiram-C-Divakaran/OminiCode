@@ -1,3 +1,4 @@
+import { apiFetch } from "./api";
 import { collection,doc,onSnapshot,query,where } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -5,26 +6,26 @@ const ORG_ID = 'default';
 
 export const RepositoryService = {
   async getRepositories() {
-    const res = await fetch('/api/repositories');
+    const res = await apiFetch('/api/repositories');
     return res.json();
   },
   async getBranches(repoId: string) {
-    const res = await fetch(`/api/repositories/${repoId}/branches`);
+    const res = await apiFetch(`/api/repositories/${repoId}/branches`);
     return res.json();
   },
   async getTree(repoId: string, path: string) {
-    const res = await fetch(`/api/repositories/${repoId}/tree?path=${encodeURIComponent(path)}`);
+    const res = await apiFetch(`/api/repositories/${repoId}/tree?path=${encodeURIComponent(path)}`);
     return res.json();
   },
   async getFile(repoId: string, branch: string, path: string) {
-    const res = await fetch(`/api/repositories/${repoId}/file?branch=${encodeURIComponent(branch)}&path=${encodeURIComponent(path)}`);
+    const res = await apiFetch(`/api/repositories/${repoId}/file?branch=${encodeURIComponent(branch)}&path=${encodeURIComponent(path)}`);
     return res.json();
   }
 };
 
 export const ScanService = {
   async startScan(repoId: string, branch: string, commitSha: string, filePath: string, scanMode: string, languageMode: string) {
-    const res = await fetch('/api/scans', {
+    const res = await apiFetch('/api/scans', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ repositoryId: repoId, branch, commitSha, filePath, scanMode, languageMode })
@@ -53,7 +54,7 @@ export const ScanService = {
 
 export const FixService = {
   async generateFix(findingId: string) {
-    const res = await fetch(`/api/findings/${findingId}/generate-fix`, { method: 'POST' });
+    const res = await apiFetch(`/api/findings/${findingId}/generate-fix`, { method: 'POST' });
     return res.json();
   },
   
@@ -67,7 +68,7 @@ export const FixService = {
   },
   
   async runTests(fixId: string) {
-    const res = await fetch(`/api/fixes/${fixId}/tests`, { method: 'POST' });
+    const res = await apiFetch(`/api/fixes/${fixId}/tests`, { method: 'POST' });
     return res.json();
   }
 };

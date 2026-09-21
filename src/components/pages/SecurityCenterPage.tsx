@@ -1,4 +1,4 @@
-import { GoogleAuthProvider,onAuthStateChanged,signInWithPopup,User } from 'firebase/auth';
+import { useAuth } from '../../context/AuthContext';
 import {
 Activity,
 AlertTriangle,
@@ -16,7 +16,6 @@ AreaChart,
 CartesianGrid,Tooltip as RechartsTooltip,ResponsiveContainer,
 XAxis,YAxis
 } from 'recharts';
-import { auth } from '../../firebase';
 import {
 RepositoryRisk,
 SecurityCenterService,
@@ -26,8 +25,7 @@ SecurityScoreMetrics
 } from '../../services/securityCenterService';
 
 export default function SecurityCenterPage() {
-  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const { firebaseUser, isLoading: authLoading, signInWithGoogle } = useAuth();
 
   const [metrics, setMetrics] = useState<SecurityScoreMetrics | null>(null);
   const [repos, setRepos] = useState<RepositoryRisk[]>([]);
@@ -35,19 +33,15 @@ export default function SecurityCenterPage() {
   const [events, setEvents] = useState<SecurityEvent[]>([]);
   const [trendData, setTrendData] = useState<{ name: string; critical: number; high: number }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setFirebaseUser(u);
-      setAuthLoading(false);
-    });
-    return unsub;
-  }, []);
+
 
   useEffect(() => {
     if (!firebaseUser) return;
     
     setLoading(true);
+    setLoadError('');
     let unsubMetrics = () => {};
     let unsubRepos = () => {};
     let unsubFindings = () => {};
@@ -62,7 +56,7 @@ export default function SecurityCenterPage() {
       unsubEvents = SecurityCenterService.subscribeToEvents(e => {
         setEvents(e);
         setLoading(false);
-      });
+      }, () => { setLoading(false); setLoadError('Security data is unavailable. Check your Firebase configuration and access permissions.'); });
     } catch (e) {
       console.error(e);
     }
@@ -74,7 +68,7 @@ export default function SecurityCenterPage() {
 
   const handleLogin = async () => {
     try {
-      await signInWithPopup(auth, new GoogleAuthProvider());
+      await signInWithGoogle();
     } catch (e) {
       console.error(e);
     }
@@ -96,7 +90,7 @@ export default function SecurityCenterPage() {
         <div className="bg-[var(--color-panel)] border border-[var(--color-border)] rounded-xl p-8 max-w-md w-full text-center">
           <Shield className="w-16 h-16 text-[var(--color-primary-indigo)] mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-white mb-2">Security Center</h2>
-          <p className="text-[var(--color-text-secondary)] mb-6">Sign in to view enterprise security metrics and real-time findings.</p>
+          <p className="text-[var(--color-text-secondary)] mb-6">Sign in to view security metrics and findings.</p>
           <button 
             onClick={handleLogin}
             className="w-full bg-[var(--color-primary-indigo)] hover:bg-[#1f6bd9] text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
@@ -124,7 +118,7 @@ export default function SecurityCenterPage() {
         <div className="max-w-7xl mx-auto flex flex-col items-center justify-center min-h-[500px] text-center">
           <ShieldCheck className="w-20 h-20 text-[var(--color-text-muted)] mb-6" />
           <h1 className="text-2xl font-bold text-white mb-2">Security Center</h1>
-          <p className="text-[var(--color-text-secondary)] text-lg">No security data available yet.</p>
+          <p className="text-[var(--color-text-secondary)] text-lg" role="status">{loadError || 'No security data available yet.'}</p>
         </div>
       </div>
     );

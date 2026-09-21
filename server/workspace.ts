@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import fs from 'fs';
 import path from 'path';
 
@@ -5,7 +6,7 @@ import path from 'path';
  * Gets or creates the workspace root folder for a specific user
  */
 export function getUserWorkspace(userId: string): string {
-  const wsDir = path.resolve(process.cwd(), 'workspaces', `user_${userId}`);
+  const wsDir = path.resolve(process.cwd(), 'workspaces', 'user_' + createHash('sha256').update(userId).digest('hex'));
   if (!fs.existsSync(wsDir)) {
     fs.mkdirSync(wsDir, { recursive: true });
     
@@ -13,7 +14,7 @@ export function getUserWorkspace(userId: string): string {
     const readmePath = path.join(wsDir, 'README.md');
     fs.writeFileSync(
       readmePath, 
-      `# OminiCode IDE Workspace\nWelcome to your local development workspace.\n\nAuthentication is mocked in this development build; this is not a secure sandbox. Feel free to create and edit files here.\n`,
+      `# OminiCode IDE Workspace\nWelcome to your local development workspace.\n\nThis workspace belongs to your authenticated account; it is not an execution sandbox. Feel free to create and edit files here.\n`,
       'utf-8'
     );
     

@@ -101,13 +101,13 @@ export const SecurityCenterService = {
     });
   },
   
-  subscribeToEvents(callback: (events: SecurityEvent[]) => void) {
+  subscribeToEvents(callback: (events: SecurityEvent[]) => void, onError: () => void = () => {}) {
     const colRef = collection(db, 'organizations', ORG_ID, 'events');
     const q = query(colRef, orderBy('createdAt', 'desc'), limit(10));
     return onSnapshot(q, (snapshot) => {
       const events = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as SecurityEvent));
       callback(events);
-    });
+    }, onError);
   },
 
   subscribeToTrends(callback: (trends: { name: string; critical: number; high: number }[]) => void) {

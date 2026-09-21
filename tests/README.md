@@ -5,3 +5,7 @@
 `fixtures/review-sample.py` preserves the standalone Python sample formerly at the repository root. It is input material for code review, not a dependency of the React/Express app and not a production auth implementation. Do not execute it as part of normal startup/testing. If deliberately run, it writes SQLite data and supports `DATABASE_PATH`, `BACKUP_PATH`, `ENV`, and `OMINICODE_SAMPLE_PASSWORD`; these fixture-only variables are not application settings. Set them to disposable local paths. No example password is embedded.
 
 Root `test-admin*`, `test-db.js`, and duplicate model-list probes were temporary diagnostics, not an automated test suite. The useful read-only diagnostics were retained under scripts/development.
+
+## Authentication
+
+Run `npm test` for the offline Admin-boundary regression suite plus path checks. `npm run test:auth:emulator` is optional integration coverage against the demo-only Auth emulator and local API; see [setup and limitations](../docs/AUTHENTICATION.md). No production credentials are required by tests.

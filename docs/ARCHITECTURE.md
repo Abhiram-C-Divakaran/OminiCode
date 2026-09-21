@@ -9,7 +9,7 @@ OminiCode is a local development prototype. `src/main.tsx` mounts React; `App.ts
 ```text
 React browser
   ├─ same-origin Express API
-  │    ├─ mock identity / no-op rate limiters
+  │    ├─ Firebase ID-token verification / per-user rate limiters
   │    ├─ local workspace helpers → workspaces/user_<id>/
   │    ├─ Firestore-shaped JSON adapter → data.json
   │    ├─ Groq chat/review (optional real external requests)
@@ -19,7 +19,7 @@ React browser
   └─ Firebase client subscriptions → configured Firestore database
 ```
 
-The JSON adapter and Firebase are **not** a unified persistence layer. Sorting, limits, transactions, and batch semantics in the JSON adapter are incomplete. Browser and Admin SDK database IDs can differ. Current Firestore rules require sign-in for organization collections but do not check organization membership. Mock auth does not create a Firebase session, so cloud views can return permission errors. Do not weaken the rules as a workaround.
+The JSON adapter and Firebase are **not** a unified persistence layer. Sorting, limits, transactions, and batch semantics in the JSON adapter are incomplete. Browser and Admin SDK database IDs can differ. Current Firestore rules require sign-in for organization collections but do not check organization membership. The real Firebase session supplies identity; organization membership rules still require Phase 3. Cloud views can return permission errors when project configuration is incomplete. Do not weaken the rules as a workaround.
 
 ## Existing route inventory
 
@@ -50,10 +50,10 @@ All routes below are retained. None was removed by Phase 1.
 | Group | Implementation status |
 | --- | --- |
 | `/api/auth/github/*`, `/api/github/*` | Prototype OAuth and GitHub proxies; state validation, callback origin, token storage and authorization need hardening |
-| `/api/files*` | Local workspace read/write/create/rename/delete under the mock identity |
+| `/api/files*` | Local workspace read/write/create/rename/delete under UID-derived isolated directories |
 | `/api/run` | Execution disabled; response only |
-| `/api/sync/*`, `/api/analytics*`, `/api/users/me*` | Local JSON adapter, mock identity, prototype preferences/activity |
-| `/api/ai/chat`, `/api/ai/review` | Real Groq calls when a key is configured; no-op limiter; returned content requires review |
+| `/api/sync/*`, `/api/analytics*`, `/api/users/me*` | Local JSON adapter, verified Firebase identity, prototype preferences/activity |
+| `/api/ai/chat`, `/api/ai/review` | Real Groq calls when a key is configured; 20/minute/user limiter; returned content requires review |
 | `/api/repositories*` | Fixed demo repositories, branches, tree and file contents |
 | `/api/scans`, `/api/findings/:id/generate-fix`, `/api/fixes/:fixId/tests` | Timed simulations persisted through Admin Firestore |
 | `/api/legacy_scans/start`, `/api/scans/:jobId/status`, `/api/scans/:jobId/findings` | In-memory demonstration queue and example findings |
@@ -79,7 +79,7 @@ Express API
 Firestore / persistence
 ```
 
-Real identities, sessions, organization authorization, and secure token boundaries must come before public exposure. Authentication, organization checks, repository credentials, persistence and scanner jobs should become explicit modules incrementally. This diagram describes the destination, not implemented assurances.
+Firebase identities and token verification are implemented. Organization authorization and hardened repository credentials must still come before public exposure. Authentication lives in AuthContext, server/auth.ts and server/security.ts. Other boundaries should become explicit modules incrementally. This diagram describes the destination, not implemented assurances.
 
 ## Intended scanner pipeline
 
@@ -116,3 +116,7 @@ Existing responsive breakpoints remain. No new fixed-width page or desktop-only 
 ## Local verification limitations
 
 A passing typecheck/build and rendering route are foundation checks, not integration/security certification. No cloud seed, OAuth exchange, real scan, repository write, payment, or production deployment is required for Phase 1 verification. Firestore permission failures without real auth are expected technical debt, not successful integrations.
+
+## Phase 2 identity layer
+
+See [AUTHENTICATION.md](AUTHENTICATION.md) for the implemented Firebase flow, all protected API families, public callback exception, persistence, revocation, hashed UID workspaces, emulator setup and validation limitations. All application routes are guarded; landing and auth pages remain public.

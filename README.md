@@ -8,12 +8,13 @@ A React developer workspace and Express API provide the foundation for repositor
 
 ## Current Status
 
-**Under active development; not suitable for production or untrusted multi-user use.** Authentication and rate limiting are bypasses. Repository listings, scanning, fix validation, pipeline runs, and several collaboration interactions are demonstrations or incomplete. A successful simulated scan is not evidence that code is secure.
+**Under active development; not suitable for production or untrusted multi-user use.** Firebase authentication and per-user in-memory rate limiting are implemented; live provider validation is pending. Organization/resource authorization is not implemented. Repository listings, scanning, fix validation, pipeline runs, and several collaboration interactions are demonstrations or incomplete. A successful simulated scan is not evidence that code is secure.
 
-Phase 1 standardizes branding, repository organization, configuration, and documentation. See [the Phase 1 report](docs/PHASE1_REPORT.md) for acceptance results and a complete change inventory. Later phases are not implemented by this cleanup.
+Phase 1 standardizes branding, repository organization, configuration, and documentation. See [the Phase 1 report](docs/PHASE1_REPORT.md) for acceptance results and a complete change inventory. Phase 2 authentication is implemented with emulator verification; see [AUTHENTICATION.md](docs/AUTHENTICATION.md) and the Phase 2 report before acceptance.
 
 ## Features
 
+- Firebase email/password and Google popup sign-in, password reset, persistent auth state, protected routes and verified API tokens.
 - Developer welcome workspace, editable local drafts, downloads, and assistant prompt shortcuts.
 - AI chat and code review through a configured Groq API key. Results require developer review.
 - Repository browser and prototype GitHub OAuth/API integration; token handling is not hardened.
@@ -44,7 +45,7 @@ npm run dev
 
 PowerShell copy command: `Copy-Item .env.example .env`. On macOS/Linux: `cp .env.example .env`. Preserve an existing `.env` rather than overwriting it.
 
-Open [localhost:3000](http://localhost:3000). The app uses hash routes, for example `/#/review`. AI requests require `GROQ_API_KEY`; the UI starts without it. Firestore-backed views require a configured Firebase project and appropriate access; they may show empty states or permission errors in an unconfigured checkout. No seed or cloud write runs during installation/startup.
+Open [localhost:3000](http://localhost:3000). The app uses hash routes, for example `/#/review`. Account access requires configured Firebase providers/Admin credentials or the free [local Auth emulator](docs/AUTHENTICATION.md). AI requests require `GROQ_API_KEY`; the UI starts without it. Firestore-backed views require a configured Firebase project and appropriate access; they may show empty states or permission errors in an unconfigured checkout. No seed or cloud write runs during installation/startup.
 
 To check the production build locally:
 
@@ -59,7 +60,7 @@ Stop the development server first, or set `PORT` to a different unused port. `np
 
 [.env.example](.env.example) is the canonical list. Server settings include `PORT`, `APP_URL`, `NODE_ENV`, and `DISABLE_HMR`; AI uses `GROQ_API_KEY` and optional `GROQ_MODEL`; prototype GitHub OAuth uses `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`.
 
-Optional Admin Firestore APIs use Application Default Credentials (`GOOGLE_APPLICATION_CREDENTIALS` or an existing ADC setup), `GCLOUD_PROJECT`, and `FIRESTORE_DATABASE_ID`. `FIRESTORE_EMULATOR_HOST` applies to the Admin SDK only. The default Admin database and checked-in client database may differ; explicitly align them when configuring your own project. The assistant UI label represents the default model; custom server model overrides are not discovered dynamically yet.
+Live authentication verification and optional Admin Firestore APIs use Application Default Credentials (`GOOGLE_APPLICATION_CREDENTIALS` or an existing ADC setup), `GCLOUD_PROJECT`, and `FIRESTORE_DATABASE_ID`. `FIRESTORE_EMULATOR_HOST` applies to the Admin SDK only. The default Admin database and checked-in client database may differ; explicitly align them when configuring your own project. The assistant UI label represents the default model; custom server model overrides are not discovered dynamically yet.
 
 `firebase-applet-config.json` contains **public web identifiers**, not an Admin key. The client SDK imports this single configuration file. Project IDs/API keys identify the Firebase app; Firestore rules and authentication control access. Do not relax rules to make demonstration seeds work. `.env`, credentials, local data, and build output are ignored by Git.
 
@@ -71,7 +72,7 @@ src/
   components/layout/       Dashboard shell and navigation
   components/pages/        Existing application pages
   config/                  Shared, non-secret product defaults
-  context/                 Temporary auth and review providers
+  context/                 Firebase auth and review providers
   services/                Browser API / Firestore adapters
   styles/                  Semantic design tokens
   types/                   Finding and scan contracts
@@ -81,7 +82,7 @@ server/
   engines/                 Future deterministic-engine interfaces
   models/                  Finding and job types
   orchestrator/            Demonstration scan lifecycle
-  auth.ts                  Explicit development bypass
+  auth.ts                  Firebase verification and rate limiting
   database.ts              Local JSON adapter
   workspace.ts             Local file helpers
 scripts/                   Opt-in seeds, diagnostics, maintenance
@@ -101,6 +102,9 @@ Future auth, middleware, route, and application-service directories should be in
 | `npm run typecheck` | TypeScript `tsc --noEmit` |
 | `npm run build` | Vite frontend + bundled Express entry point |
 | `npm start` | Serve the built app locally in production mode |
+| `npm test` | Auth regression suite and workspace checks |
+| `npm run test:auth` | Credential rejection, verified identity, API/session and limiter checks |
+| `npm run test:auth:emulator` | Optional isolated SDK/API integration checks |
 | `npm run test:workspace` | Existing lexical workspace-path regression checks |
 | `npm run clean` | Remove only generated `dist/` and legacy `server.js` |
 
@@ -108,8 +112,8 @@ There is no ESLint setup yet; TypeScript checking is not called linting. Compreh
 
 ## Security Notes
 
-- Never deploy this development bypass to a public environment. The server currently listens on all interfaces; restrict access locally.
-- `requireAuth` supplies one mock identity and rate limiters do nothing. No RBAC/session security is claimed.
+- Do not deploy this prototype to a public environment. The server currently listens on all interfaces; restrict access locally.
+- `requireAuth` verifies Firebase tokens including revocation. Process-local rate limiting is not distributed; no organization RBAC is claimed.
 - GitHub tokens currently pass through browser storage and prototype callbacks; OAuth state, origin checks, and secure token storage need Phase 4.
 - JSON persistence is not transactional or safe for concurrent production writers. Existing Firebase rules do not enforce organization membership.
 - Scan/test/pipeline states can be simulated. Deterministic engines and real validation are future work.
@@ -119,7 +123,7 @@ There is no ESLint setup yet; TypeScript checking is not called linting. Compreh
 
 ## Roadmap
 
-See [ROADMAP.md](docs/ROADMAP.md) for the sixteen staged phases. Phase 2 is limited to authentication/session security and begins only after review.
+See [ROADMAP.md](docs/ROADMAP.md) for the sixteen staged phases. Phase 2 remains limited to authentication/session security; live-provider verification is required before marking it complete.
 
 ## Contributing
 

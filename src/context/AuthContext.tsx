@@ -1,58 +1,154 @@
-// Temporary mock identity and no-op auth actions. Real sessions begin in Phase 2.
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-import React,{ createContext,useContext,useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  browserLocalPersistence,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  onIdTokenChanged,
+  sendPasswordResetEmail,
+  setPersistence,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  updateProfile,
+  type User,
+} from "firebase/auth";
+import { auth } from "../firebase";
+import { cancelApiRequests } from "../services/api";
 
 export interface UserProfile {
-  id: string;
-  email: string;
-  name: string;
-  username: string;
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
 }
-
 interface AuthContextType {
   user: UserProfile | null;
-  token: string | null;
+  firebaseUser: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  socialLogin: (provider: string, email: string, name: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
-  signInWithGithub: () => Promise<void>;
-  register: (name: string, username: string, email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  updateProfile: (name: string, username: string, email: string, password?: string) => Promise<void>;
-  isAuthLoading: boolean;
+  isAuthenticated: boolean;
+  sessionError: string;
+  login(email: string, password: string): Promise<void>;
+  register(name: string, email: string, password: string): Promise<void>;
+  signInWithGoogle(): Promise<void>;
+  logout(): Promise<void>;
+  resetPassword(email: string): Promise<void>;
+  getAccessToken(forceRefresh?: boolean): Promise<string | null>;
 }
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
+const profile = (user: User): UserProfile => ({
+  uid: user.uid,
+  email: user.email,
+  displayName: user.displayName,
+  photoURL: user.photoURL,
+});
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user] = useState<UserProfile | null>({
-    id: 'mock-user-id',
-    email: 'developer@ominicode.example',
-    name: 'Admin User',
-    username: 'admin'
-  });
-  const [token] = useState<string | null>('mock-token');
-  const isLoading = false;
-  const isAuthLoading = false;
-  
-  const noop = async () => {};
-
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isLoading, setLoading] = useState(true);
+  const [sessionError, setSessionError] = useState("");
+  useEffect(() => {
+    const expired = () =>
+      setSessionError("Your session has expired. Please sign in again.");
+    window.addEventListener("ominicode:session-expired", expired);
+    return () =>
+      window.removeEventListener("ominicode:session-expired", expired);
+  }, []);
+  const lastUid = useRef<string | null>(null);
+  useEffect(
+    () =>
+      onIdTokenChanged(
+        auth,
+        (current) => {
+          if (lastUid.current !== (current?.uid ?? null)) cancelApiRequests();
+          lastUid.current = current?.uid ?? null;
+          setFirebaseUser(current);
+          setUser(current ? profile(current) : null);
+          setLoading(false);
+        },
+        () => {
+          cancelApiRequests();
+          setFirebaseUser(null);
+          setUser(null);
+          setLoading(false);
+        },
+      ),
+    [],
+  );
+  const persist = () => {
+    setSessionError("");
+    return setPersistence(auth, browserLocalPersistence);
+  };
+  const login = async (email: string, password: string) => {
+    await persist();
+    await signInWithEmailAndPassword(auth, email.trim(), password);
+  };
+  const register = async (name: string, email: string, password: string) => {
+    await persist();
+    const result = await createUserWithEmailAndPassword(
+      auth,
+      email.trim(),
+      password,
+    );
+    await updateProfile(result.user, { displayName: name.trim() });
+    setUser(profile(result.user));
+  };
+  const signInWithGoogle = async () => {
+    await persist();
+    await signInWithPopup(auth, new GoogleAuthProvider());
+  };
+  const logout = async () => {
+    cancelApiRequests();
+    await signOut(auth);
+    setFirebaseUser(null);
+    setUser(null);
+    // Repository OAuth is separate, but do not leave its browser credentials for the next account.
+    try {
+      localStorage.removeItem("gh_token");
+      localStorage.removeItem("gh_active_repo");
+    } catch {
+      /* Storage may be unavailable; Firebase sign-out still succeeded. */
+    }
+  };
+  const resetPassword = async (email: string) => {
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+    } catch (error) {
+      if ((error as { code?: string }).code !== "auth/user-not-found")
+        throw error;
+    }
+  };
+  const getAccessToken = async (forceRefresh = false) => {
+    await auth.authStateReady();
+    return auth.currentUser ? auth.currentUser.getIdToken(forceRefresh) : null;
+  };
   return (
-    <AuthContext.Provider value={{
-      user, token, isLoading, isAuthLoading,
-      login: noop, socialLogin: noop, signInWithGoogle: noop, signInWithGithub: noop, register: noop, logout: noop, updateProfile: noop
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        firebaseUser,
+        isLoading,
+        sessionError,
+        isAuthenticated: !!user,
+        login,
+        register,
+        signInWithGoogle,
+        logout,
+        resetPassword,
+        getAccessToken,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
-
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within a AuthProvider');
-  return context;
+  const value = useContext(AuthContext);
+  if (!value) throw new Error("useAuth must be used inside AuthProvider");
+  return value;
 }

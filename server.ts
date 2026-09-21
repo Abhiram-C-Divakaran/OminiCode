@@ -1,3 +1,5 @@
+import { apiAuthentication, securityHeaders } from './server/security';
+import { authRateLimiter } from './server/auth';
 import 'dotenv/config';
 /**
  * @license
@@ -16,7 +18,6 @@ import { createServer as createViteServer } from 'vite';
 import {
 aiRateLimiter,
 AuthenticatedRequest,
-requireAuth
 } from './server/auth';
 import db from './server/database';
 import {
@@ -25,6 +26,9 @@ resolveAndValidatePath
 } from './server/workspace';
 
 const app = express();
+app.disable('x-powered-by');
+app.use(securityHeaders);
+app.use('/api', apiAuthentication());
 // Parse JSON before every API route, including the GitHub proxy.
 app.use(express.json({ limit: '15mb' }));
 
@@ -37,7 +41,7 @@ const getRedirectUri = (req: express.Request) => {
 const PORT = serverConfig.port;
 
 // --- GITHUB OAUTH ROUTES ---
-app.get('/api/auth/github/url', (req, res) => {
+app.get('/api/auth/github/url', authRateLimiter.middleware(), (req, res) => {
   const redirectUri = getRedirectUri(req) + '/api/auth/github/callback';
   const params = new URLSearchParams({
     client_id: process.env.GITHUB_CLIENT_ID || '',
@@ -167,7 +171,7 @@ const GROQ_MODEL = serverConfig.groqModel;
 // ==========================================
 
 // Get list of all workspace files for authenticated user
-app.get('/api/files', requireAuth, (req: AuthenticatedRequest, res) => {
+app.get('/api/files', (req: AuthenticatedRequest, res) => {
   try {
     const files = getUserFilesRecursively(req.user!.id);
     res.json(files);
@@ -177,7 +181,7 @@ app.get('/api/files', requireAuth, (req: AuthenticatedRequest, res) => {
 });
 
 // Read file content with boundary check
-app.get('/api/files/content', requireAuth, (req: AuthenticatedRequest, res) => {
+app.get('/api/files/content', (req: AuthenticatedRequest, res) => {
   const filePath = req.query.path as string;
   try {
     const fullPath = resolveAndValidatePath(req.user!.id, filePath);
@@ -194,7 +198,7 @@ app.get('/api/files/content', requireAuth, (req: AuthenticatedRequest, res) => {
 });
 
 // Write / Save file content with boundary check
-app.post('/api/files/write', requireAuth, (req: AuthenticatedRequest, res) => {
+app.post('/api/files/write', (req: AuthenticatedRequest, res) => {
   const { path: filePath, content } = req.body;
   if (content === undefined) {
     res.status(400).json({ error: 'Content is required' });
@@ -215,7 +219,7 @@ app.post('/api/files/write', requireAuth, (req: AuthenticatedRequest, res) => {
 });
 
 // Create an empty file with boundary check
-app.post('/api/files/create', requireAuth, (req: AuthenticatedRequest, res) => {
+app.post('/api/files/create', (req: AuthenticatedRequest, res) => {
   const { path: filePath } = req.body;
 
   try {
@@ -236,7 +240,7 @@ app.post('/api/files/create', requireAuth, (req: AuthenticatedRequest, res) => {
 });
 
 // Rename file with boundary check
-app.post('/api/files/rename', requireAuth, (req: AuthenticatedRequest, res) => {
+app.post('/api/files/rename', (req: AuthenticatedRequest, res) => {
   const { oldPath, newPath } = req.body;
   if (!oldPath || !newPath) {
     res.status(400).json({ error: 'oldPath and newPath are required' });
@@ -263,7 +267,7 @@ app.post('/api/files/rename', requireAuth, (req: AuthenticatedRequest, res) => {
 });
 
 // Delete file with boundary check
-app.post('/api/files/delete', requireAuth, (req: AuthenticatedRequest, res) => {
+app.post('/api/files/delete', (req: AuthenticatedRequest, res) => {
   const { path: filePath } = req.body;
 
   try {
@@ -283,7 +287,7 @@ app.post('/api/files/delete', requireAuth, (req: AuthenticatedRequest, res) => {
 // ==========================================
 // 3. CODE EXECUTION PLACEHOLDER
 // ==========================================
-app.post('/api/run', requireAuth, (req: AuthenticatedRequest, res) => {
+app.post('/api/run', (req: AuthenticatedRequest, res) => {
   // To avoid critical security issues (Remote Code Execution), we completely disable arbitrary host execution.
   // Instead, the frontend handles safe code running inside sandboxed iframes or we inform the user.
   res.json({
@@ -299,7 +303,7 @@ app.post('/api/run', requireAuth, (req: AuthenticatedRequest, res) => {
 // ==========================================
 
 // Chat Sync
-app.get('/api/sync/chat', requireAuth, async (req: AuthenticatedRequest, res) => {
+app.get('/api/sync/chat', async (req: AuthenticatedRequest, res) => {
   try {
     const snapshot = await db.collection('users').doc(req.user!.id).collection('chat_history').orderBy('timestamp', 'asc').get();
     
@@ -322,7 +326,7 @@ app.get('/api/sync/chat', requireAuth, async (req: AuthenticatedRequest, res) =>
   }
 });
 
-app.post('/api/sync/chat', requireAuth, async (req: AuthenticatedRequest, res) => {
+app.post('/api/sync/chat', async (req: AuthenticatedRequest, res) => {
   const messages = req.body;
   if (!Array.isArray(messages)) {
     res.status(400).json({ error: 'Invalid message state body' });
@@ -363,7 +367,7 @@ app.post('/api/sync/chat', requireAuth, async (req: AuthenticatedRequest, res) =
 });
 
 // Extensions Sync
-app.get('/api/sync/extensions', requireAuth, async (req: AuthenticatedRequest, res) => {
+app.get('/api/sync/extensions', async (req: AuthenticatedRequest, res) => {
   try {
     const snapshot = await db.collection('users').doc(req.user!.id).collection('extensions').where('installed', '==', 1).get();
     res.json(snapshot.docs.map(doc => doc.id));
@@ -372,7 +376,7 @@ app.get('/api/sync/extensions', requireAuth, async (req: AuthenticatedRequest, r
   }
 });
 
-app.post('/api/sync/extensions', requireAuth, async (req: AuthenticatedRequest, res) => {
+app.post('/api/sync/extensions', async (req: AuthenticatedRequest, res) => {
   const installedIds = req.body;
   if (!Array.isArray(installedIds)) {
     res.status(400).json({ error: 'Expected array of extension IDs' });
@@ -412,7 +416,7 @@ app.post('/api/sync/extensions', requireAuth, async (req: AuthenticatedRequest, 
 });
 
 // Reviews History Sync
-app.get('/api/sync/reviews', requireAuth, async (req: AuthenticatedRequest, res) => {
+app.get('/api/sync/reviews', async (req: AuthenticatedRequest, res) => {
   try {
     const snapshot = await db.collection('users').doc(req.user!.id).collection('reviews').get();
     
@@ -439,7 +443,7 @@ app.get('/api/sync/reviews', requireAuth, async (req: AuthenticatedRequest, res)
   }
 });
 
-app.post('/api/sync/reviews', requireAuth, async (req: AuthenticatedRequest, res) => {
+app.post('/api/sync/reviews', async (req: AuthenticatedRequest, res) => {
   const reviewsObj = req.body;
   if (!reviewsObj || typeof reviewsObj !== 'object') {
     res.status(400).json({ error: 'Expected review map object' });
@@ -485,7 +489,7 @@ app.post('/api/sync/reviews', requireAuth, async (req: AuthenticatedRequest, res
 // 4b. REAL-TIME WORKSPACE ANALYTICS & INSIGHTS
 // ==========================================
 
-app.get('/api/analytics', requireAuth, async (req: AuthenticatedRequest, res) => {
+app.get('/api/analytics', async (req: AuthenticatedRequest, res) => {
   const userId = req.user!.id;
   try {
     // 1. Get all reviews
@@ -599,7 +603,7 @@ app.get('/api/analytics', requireAuth, async (req: AuthenticatedRequest, res) =>
   }
 });
 
-app.post('/api/analytics/activity', requireAuth, async (req: AuthenticatedRequest, res) => {
+app.post('/api/analytics/activity', async (req: AuthenticatedRequest, res) => {
   const { seconds } = req.body;
   if (seconds === undefined || typeof seconds !== 'number' || seconds <= 0) {
     res.status(400).json({ error: 'Valid seconds count is required' });
@@ -634,7 +638,7 @@ app.post('/api/analytics/activity', requireAuth, async (req: AuthenticatedReques
 // ==========================================
 
 // Smart Code Reviewer
-app.post('/api/ai/review', requireAuth, aiRateLimiter.middleware(), async (req: AuthenticatedRequest, res) => {
+app.post('/api/ai/review', aiRateLimiter.middleware(), async (req: AuthenticatedRequest, res) => {
   const { filePath, code, language, rules, repoTree } = req.body;
   if (!code) {
     res.status(400).json({ error: 'Code content is required' });
@@ -724,7 +728,7 @@ ${code}
 });
 
 // Chatbot Assist
-app.post('/api/ai/chat', requireAuth, aiRateLimiter.middleware(), async (req: AuthenticatedRequest, res) => {
+app.post('/api/ai/chat', aiRateLimiter.middleware(), async (req: AuthenticatedRequest, res) => {
   const { messages, activeFile } = req.body;
   if (!messages || !Array.isArray(messages)) {
     res.status(400).json({ error: 'Messages array is required' });
@@ -788,17 +792,17 @@ ${activeFile ? `File Path: "${activeFile.path}"\nLanguage: "${activeFile.path.sp
 // ==========================================
 
 // Get user profile including extended data (preferences, permissions)
-app.get('/api/users/me', requireAuth, async (req: AuthenticatedRequest, res) => {
+app.get('/api/users/me', async (req: AuthenticatedRequest, res) => {
   try {
     const userDoc = await db.collection('users').doc(req.user!.id).get();
     if (!userDoc.exists) {
-      res.status(404).json({ error: 'User not found' });
+      res.json({ uid: req.user!.id, email: req.user!.email });
       return;
     }
     const data = userDoc.data() || {};
     // Ensure defaults
     if (!data.preferences) data.preferences = { theme: 'dark', editorFontSize: 14 };
-    if (!data.permissions) data.permissions = { canCreateFiles: true, canRunAI: true, role: 'user' };
+    // Stored legacy permissions are inert metadata, never authorization.
     res.json(data);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -806,7 +810,7 @@ app.get('/api/users/me', requireAuth, async (req: AuthenticatedRequest, res) => 
 });
 
 // Update User Preferences
-app.post('/api/users/me/preferences', requireAuth, async (req: AuthenticatedRequest, res) => {
+app.post('/api/users/me/preferences', async (req: AuthenticatedRequest, res) => {
   try {
     const preferences = req.body;
     await db.collection('users').doc(req.user!.id).set({
@@ -820,7 +824,7 @@ app.post('/api/users/me/preferences', requireAuth, async (req: AuthenticatedRequ
 });
 
 // Update User Permissions (Admin restricted in a full implementation)
-app.post('/api/users/me/permissions', requireAuth, async (req: AuthenticatedRequest, res) => {
+app.post('/api/users/me/permissions', async (req: AuthenticatedRequest, res) => {
   try {
     const permissions = req.body;
     await db.collection('users').doc(req.user!.id).set({
@@ -834,7 +838,7 @@ app.post('/api/users/me/permissions', requireAuth, async (req: AuthenticatedRequ
 });
 
 // Comprehensive User Activity Log (Different from Analytics)
-app.post('/api/users/me/activity-log', requireAuth, async (req: AuthenticatedRequest, res) => {
+app.post('/api/users/me/activity-log', async (req: AuthenticatedRequest, res) => {
   try {
     const { action, details } = req.body;
     const activityRef = db.collection('users').doc(req.user!.id).collection('activity_logs').doc();
@@ -852,7 +856,7 @@ app.post('/api/users/me/activity-log', requireAuth, async (req: AuthenticatedReq
 });
 
 // Fetch Comprehensive User Activity Log
-app.get('/api/users/me/activity-log', requireAuth, async (req: AuthenticatedRequest, res) => {
+app.get('/api/users/me/activity-log', async (req: AuthenticatedRequest, res) => {
   try {
     const limitCount = parseInt(req.query.limit as string) || 50;
     const snapshot = await db.collection('users').doc(req.user!.id)
@@ -881,7 +885,7 @@ import { scanOrchestrator } from './server/orchestrator/ScanOrchestrator.js';
 // --- CODE REVIEW ROUTES ---
 
 
-app.get('/api/repositories', requireAuth, async (req, res) => {
+app.get('/api/repositories', async (req, res) => {
   // Temporary repository fixtures; live GitHub proxy routes are separate.
   res.json({ repositories: [
     { ...PRODUCT.defaultRepository, defaultBranch: 'main' },
@@ -889,11 +893,11 @@ app.get('/api/repositories', requireAuth, async (req, res) => {
   ]});
 });
 
-app.get('/api/repositories/:id/branches', requireAuth, async (req, res) => {
+app.get('/api/repositories/:id/branches', async (req, res) => {
   res.json({ branches: ['main', 'staging', 'feature/auth', 'hotfix/1.2.1'] });
 });
 
-app.get('/api/repositories/:id/tree', requireAuth, async (req, res) => {
+app.get('/api/repositories/:id/tree', async (req, res) => {
   const path = typeof req.query.path === 'string' ? req.query.path : '';
   if (path === '') {
     res.json({ items: [
@@ -912,7 +916,7 @@ app.get('/api/repositories/:id/tree', requireAuth, async (req, res) => {
   }
 });
 
-app.get('/api/repositories/:id/file', requireAuth, async (req, res) => {
+app.get('/api/repositories/:id/file', async (req, res) => {
   const path = typeof req.query.path === 'string' ? req.query.path : '';
   if (path.includes('auth.ts')) {
     res.json({ content: 'export function login(user, pass) {\n  // TODO: hash password\n  const query = \'SELECT * FROM users WHERE username = \' + user + \' AND password = \' + pass;\n  db.execute(query);\n}' });
@@ -923,7 +927,7 @@ app.get('/api/repositories/:id/file', requireAuth, async (req, res) => {
   }
 });
 
-app.post('/api/scans', requireAuth, async (req, res) => {
+app.post('/api/scans', async (req, res) => {
   const { repositoryId, branch, commitSha, filePath, scanMode, languageMode } = req.body;
   const scanId = 'SCAN-' + Math.floor(Math.random() * 10000);
   
@@ -1003,7 +1007,7 @@ app.post('/api/scans', requireAuth, async (req, res) => {
   }
 });
 
-app.post('/api/findings/:id/generate-fix', requireAuth, async (req, res) => {
+app.post('/api/findings/:id/generate-fix', async (req, res) => {
   const findingId = req.params.id;
   const fixId = 'FIX-' + Math.floor(Math.random() * 10000);
   
@@ -1033,7 +1037,7 @@ app.post('/api/findings/:id/generate-fix', requireAuth, async (req, res) => {
   }
 });
 
-app.post('/api/fixes/:fixId/tests', requireAuth, async (req, res) => {
+app.post('/api/fixes/:fixId/tests', async (req, res) => {
   const fixId = req.params.fixId;
   
   const adminDb = getAdminDatabase();
@@ -1052,7 +1056,7 @@ app.post('/api/fixes/:fixId/tests', requireAuth, async (req, res) => {
 });
 
 
-app.post('/api/legacy_scans/start', requireAuth, async (req, res) => {
+app.post('/api/legacy_scans/start', async (req, res) => {
     try {
         const { repositoryId, branch, commitSha } = req.body;
         
@@ -1070,7 +1074,7 @@ app.post('/api/legacy_scans/start', requireAuth, async (req, res) => {
     }
 });
 
-app.get('/api/scans/:jobId/status', requireAuth, async (req, res) => {
+app.get('/api/scans/:jobId/status', async (req, res) => {
     try {
         const job = await scanOrchestrator.getJobStatus(req.params.jobId);
         if (!job) {
@@ -1083,7 +1087,7 @@ app.get('/api/scans/:jobId/status', requireAuth, async (req, res) => {
     }
 });
 
-app.get('/api/scans/:jobId/findings', requireAuth, async (req, res) => {
+app.get('/api/scans/:jobId/findings', async (req, res) => {
     // Clean interface/service boundary for structured findings
     // Marked as pending for full deterministic scanner integration
     try {
@@ -1124,7 +1128,7 @@ app.get('/api/scans/:jobId/findings', requireAuth, async (req, res) => {
 
 
 // --- DEVOPS ROUTES ---
-app.post('/api/devops/pipelines/trigger', requireAuth, async (req: AuthenticatedRequest, res) => {
+app.post('/api/devops/pipelines/trigger', async (req: AuthenticatedRequest, res) => {
   const { repositoryId, branch, environment } = req.body;
   if (!repositoryId || !branch || !environment) {
     return res.status(400).json({ error: 'Missing required parameters' });

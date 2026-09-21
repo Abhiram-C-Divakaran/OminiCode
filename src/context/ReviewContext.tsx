@@ -1,3 +1,4 @@
+import { apiFetch } from "../services/api";
 import React,{ createContext,useContext,useEffect,useState } from 'react';
 import { ReviewResult } from '../types';
 import { useAuth } from './AuthContext';
@@ -19,7 +20,7 @@ interface ReviewContextType {
 const ReviewContext = createContext<ReviewContextType | undefined>(undefined);
 
 export function ReviewProvider({ children }: { children: React.ReactNode }) {
-  const { token } = useAuth();
+  const { user } = useAuth();
   const [reviews, setReviews] = useState<Record<string, ReviewResult>>({});
   const [isReviewing, setIsReviewing] = useState(false);
   
@@ -29,16 +30,15 @@ export function ReviewProvider({ children }: { children: React.ReactNode }) {
   const [scanProgress, setScanProgress] = useState(0);
 
   useEffect(() => {
-    if (token) {
+    if (user) {
       loadReviews();
     } else {
       setReviews({});
     }
-  }, [token]);
+  }, [user?.uid]);
 
   const getHeaders = () => ({
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
+    'Content-Type': 'application/json'
   });
 
   const loadReviews = async () => {
@@ -51,13 +51,13 @@ export function ReviewProvider({ children }: { children: React.ReactNode }) {
   };
   
   const startRepositoryScan = async (repoId: string, branch: string) => {
-    if (!token) return;
+    if (!user) return;
     setIsReviewing(true);
     setScanStatus('QUEUED');
     setScanProgress(0);
     
     try {
-      const res = await fetch('/api/scans/start', {
+      const res = await apiFetch('/api/scans/start', {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify({ repositoryId: repoId, branch })
@@ -79,7 +79,7 @@ export function ReviewProvider({ children }: { children: React.ReactNode }) {
         setScanProgress(80);
         await new Promise(r => setTimeout(r, 1000));
         
-        const findingsRes = await fetch(`/api/scans/${data.job.id}/findings`, { headers: getHeaders() });
+        const findingsRes = await apiFetch(`/api/scans/${data.job.id}/findings`, { headers: getHeaders() });
         await findingsRes.json();
         
         setScanStatus('COMPLETED');

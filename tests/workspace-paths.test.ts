@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import path from 'path';
 import { resolveAndValidatePath } from '../server/workspace';
 
@@ -25,7 +26,7 @@ try {
   const validRelativePath = 'src/components/MyCode.ts';
   const resolvedValid = resolveAndValidatePath(mockUserId, validRelativePath);
   
-  const expectedSubstring = path.join(`user_${mockUserId}`, 'src', 'components', 'MyCode.ts');
+  const expectedSubstring = path.join('user_' + createHash('sha256').update(mockUserId).digest('hex'), 'src', 'components', 'MyCode.ts');
   assert(resolvedValid.includes(expectedSubstring), 'Valid path resolves correctly inside user workspace directory');
 
   // Test 4: Path Traversal boundary checks - malicious attempts (escaping workspace)

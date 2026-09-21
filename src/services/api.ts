@@ -1,10 +1,17 @@
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
+import { AuthenticationError, createAuthenticatedFetch } from './authenticatedFetch';
+const client = createAuthenticatedFetch({ ready: () => auth.authStateReady(), current: () => auth.currentUser, invalidate: async () => { window.dispatchEvent(new Event('ominicode:session-expired')); await signOut(auth); }, fetch: (input, init) => fetch(input, init) });
+export const apiFetch = client.request;
+export const cancelApiRequests = client.cancel;
+export { AuthenticationError };
 import { ScanMode } from '../types/scan';
 
 export const scanService = {
   startScan: async (repoId: string, branch: string, commitSha: string, filePath: string, scanMode: ScanMode, language: string) => {
     // Attempt real API call if available
     try {
-      const res = await fetch('/api/scans/start', {
+      const res = await apiFetch('/api/scans/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ repositoryId: repoId, branch, commitSha, filePath, scanMode, language })
@@ -12,7 +19,7 @@ export const scanService = {
       if (res.ok) {
          return res.json();
       }
-    } catch(e) {}
+    } catch(e) { if (e instanceof AuthenticationError) throw e; }
     
     // Fallback Mock implementation matching the clean service boundary
     return new Promise((resolve) => {
@@ -24,21 +31,21 @@ export const scanService = {
 
   getJobStatus: async (jobId: string) => {
     try {
-      const res = await fetch(`/api/scans/${jobId}/status`);
+      const res = await apiFetch(`/api/scans/${jobId}/status`);
       if (res.ok) return res.json();
-    } catch(e) {}
+    } catch(e) { if (e instanceof AuthenticationError) throw e; }
     // Simulated status tracking
     return { status: 'COMPLETED' };
   },
 
   getFindings: async (jobId: string) => {
     try {
-      const res = await fetch(`/api/scans/${jobId}/findings`);
+      const res = await apiFetch(`/api/scans/${jobId}/findings`);
       if (res.ok) {
         const data = await res.json();
         return data.findings || [];
       }
-    } catch(e) {}
+    } catch(e) { if (e instanceof AuthenticationError) throw e; }
     
     // Mock finding for frontend wiring if API fails
     return [{

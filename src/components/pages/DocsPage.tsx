@@ -28,7 +28,7 @@ const DOCS_NAV = [
 const DOC_CONTENT: Record<string, { title: string; content: string; code?: string }> = {
   "start": {
     "title": "Getting started with OminiCode",
-    "content": "OminiCode is under active development. Run the local React and Express app to explore the workspace. Authentication, scanner engines, and provider integrations are temporary or incomplete. There is no published OminiCode CLI.",
+    "content": "OminiCode is under active development. Run the local React and Express app to explore the workspace. Firebase authentication protects the workspace. Scanner engines and provider integrations remain incomplete. There is no published OminiCode CLI.",
     "code": "npm install\n# Copy .env.example to .env\nnpm run dev\n\n# Validate the foundation\nnpm run typecheck\nnpm run build"
   },
   "ast": {
@@ -44,7 +44,7 @@ const DOC_CONTENT: Record<string, { title: string; content: string; code?: strin
   "api": {
     "title": "Local development API",
     "content": "The API runs on the same origin as the frontend. /api/repositories returns demo repositories. /api/ai/chat and /api/ai/review require a server-side Groq key. This playground shows a static example; it does not invoke a scanner or external service.",
-    "code": "GET /api/repositories\nPOST /api/ai/chat\nPOST /api/ai/review\n\n// Local development only. Authentication is mocked."
+    "code": "GET /api/repositories\nPOST /api/ai/chat\nPOST /api/ai/review\n\n// Local development only. Send a Firebase ID token as Authorization: Bearer <token>."
   }
 };
 

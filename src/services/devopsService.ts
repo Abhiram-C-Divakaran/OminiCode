@@ -1,3 +1,4 @@
+import { apiFetch } from "./api";
 import { collection,doc,limit,onSnapshot,orderBy,query,where } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -88,7 +89,7 @@ export const DevOpsService = {
   },
 
   async triggerPipeline(repositoryId: string, branch: string, environment: string) {
-    const res = await fetch('/api/devops/pipelines/trigger', {
+    const res = await apiFetch('/api/devops/pipelines/trigger', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

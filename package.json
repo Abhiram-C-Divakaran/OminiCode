@@ -9,7 +9,10 @@
     "start": "node scripts/development/start-production.mjs",
     "clean": "node scripts/maintenance/clean.mjs",
     "typecheck": "tsc --noEmit",
-    "test:workspace": "tsx tests/workspace-paths.test.ts"
+    "test:workspace": "tsx tests/workspace-paths.test.ts",
+    "test": "npm run test:auth && npm run test:workspace",
+    "test:auth": "tsx --test tests/auth.test.ts",
+    "test:auth:emulator": "tsx tests/auth-emulator.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
