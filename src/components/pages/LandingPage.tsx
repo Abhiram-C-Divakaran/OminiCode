@@ -1,284 +1,88 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-import React, { useState } from 'react';
+import { ArrowRight,ArrowUpRight,Check,ChevronDown,CircleAlert,Code2,FlaskConical,GitBranch,Github,Heart,Layers,Menu,MessageCircle,Play,Rocket,Search,Send,Shield,Sparkles,Users,Wrench,X,Zap } from 'lucide-react';
+import { useEffect,useRef,useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Sparkles, 
-  ArrowRight, 
-  Shield, 
-  Zap, 
-  Cpu, 
-  Terminal, 
-  GitPullRequest, 
-  CheckCircle, 
-  Play,
-  Github,
-  Award
-} from 'lucide-react';
-import DragonLogo from '../DragonLogo';
-import DemoVideo from '../DemoVideo';
+import OminiCodeLogo from '../brand/OminiCodeLogo';
+import './LandingPage.css';
+
+const features = [
+  { icon: Sparkles, title: 'AI Code Review', text: 'Intelligent, context-aware feedback on code quality, security, and best practices.', color: 'violet', route: '/review' },
+  { icon: Shield, title: 'Security Scanning', text: 'Find and fix vulnerabilities early, before they ever reach production.', color: 'teal', route: '/security' },
+  { icon: Wrench, title: 'Auto-Fix Suggestions', text: 'Turn insights into clean, secure code. One suggestion. One click.', color: 'coral', route: '/review' },
+  { icon: FlaskConical, title: 'Test Generation', text: 'Generate meaningful tests and build confidence in every change.', color: 'blue', route: '/review' },
+  { icon: Github, title: 'GitHub Integration', text: 'Your repositories, connected. A workflow that feels like second nature.', color: 'silver', route: '/repo' },
+  { icon: Users, title: 'Team Collaboration', text: 'Share insights, track progress, and build something great together.', color: 'pink', route: '/team' },
+  { icon: Code2, title: 'Multi-Language Support', text: 'Work with the languages and frameworks you already love.', color: 'violet', route: '/review' },
+  { icon: Rocket, title: 'DevOps Ready', text: 'Bring intelligence to your CI/CD and deploy with confidence.', color: 'pink', route: '/devops' },
+];
+const audiences = [
+  ['Individual Developers', 'Build and ship faster with AI by your side.'],
+  ['Engineering Teams', 'Collaborate, review, and ship better code together.'],
+  ['Startups', 'From your first idea to production, with confidence.'],
+  ['Enterprises', 'Bring clarity to development across your organization.'],
+];
+const resources: Record<string, { intro: string; items: string[] }> = {
+  Pricing: { intro: 'Start building with the local OminiCode workspace.', items: ['Free workspace — code review, repository tools, and collaboration views.', 'Bring your own Groq API key to enable AI reviews.', 'Team and enterprise plans are not available for purchase yet.'] },
+  Changelog: { intro: 'A fresh home for a better development workflow.', items: ['New OminiCode landing page and interactive review preview.', 'AI-assisted reviews, security findings, and suggested fixes.', 'Repository, team, and DevOps workspaces in one place.'] },
+  About: { intro: 'Better tools. Brighter ideas. A more open tomorrow.', items: ['OminiCode brings AI, security, testing, and collaboration into one developer workspace.', 'Built for curious developers who care about the software they ship.'] },
+  Careers: { intro: 'Help shape what comes next.', items: ['There are no open roles listed at the moment.', 'Explore the GitHub repository to learn about the project and contribute.'] },
+  Privacy: { intro: 'Your development data deserves clarity.', items: ['This local version stores workspace activity on the machine running the server.', 'AI requests send the submitted code to the configured AI provider.', 'The update reminder below is saved only in your browser. No email is sent.'] },
+  Contact: { intro: 'Let’s build a better developer experience.', items: ['For product questions, sales inquiries, or feedback, open an issue in the OminiCode GitHub repository.', 'Avoid including private code or credentials in public issues.'] },
+  Blog: { intro: 'Notes from the build.', items: ['Product stories and engineering articles are coming soon.', 'For now, follow development in the repository or explore the documentation.'] },
+};
+
+function Brand() { return <OminiCodeLogo className="om-brand" size={32} />; }
+
+function IDEPreview({ interactive = false }: { interactive?: boolean }) {
+  const [fixed, setFixed] = useState(false);
+  return <div className="om-ide" aria-label="Interactive example of the OminiCode editor">
+    <div className="om-ide-top"><Brand /><span className="om-ide-search"><Search size={12} />Search files, issues, or ask AI…<kbd>⌘ K</kbd></span><span className="om-avatar">A</span></div>
+    <div className="om-ide-body">
+      <aside className="om-ide-nav">{[[Layers, 'Workspace'], [Sparkles, 'AI Assistant'], [Code2, 'Code Review'], [Shield, 'Security'], [FlaskConical, 'Tests'], [Rocket, 'Deployments'], [GitBranch, 'Repositories'], [Users, 'Team']].map(([Icon, title], i) => { const I = Icon as typeof Layers; return <div key={String(title)} className={i === 1 ? 'selected' : ''}><I size={13}/><span>{String(title)}</span></div>; })}<span className="om-ide-nav-bottom"><span className="om-status-dot"/> All systems operational</span></aside>
+      <div className="om-editor"><div className="om-file"><Code2 size={12}/> auth.ts <span>×</span><small>TypeScript</small></div>
+        <div className="om-code">{[
+          <><b>import</b> {'{ db }'} <b>from</b> <em>'./database'</em>;</>,
+          '',
+          <><b>export async function</b> <strong>getUser</strong>(id: <em>string</em>) {'{'}</>,
+          <span className="om-code-comment">  // A little confidence in every commit.</span>,
+          <>  <b>const</b> user = <b>await</b> db.<strong>query</strong>(</>,
+          fixed ? <>    <em>'SELECT * FROM users WHERE id = ?'</em>,</> : <>    <em>'SELECT * FROM users WHERE id = '</em> + id</>,
+          fixed ? <>    [id]</> : <>    <span className="om-code-comment">// Unvalidated input</span></>,
+          <>  );</>,
+          <>  <b>return</b> user;</>,
+          <>{'}'}</>,
+        ].map((line, i) => <div className={!fixed && i === 5 ? 'om-risk-line' : ''} key={i}><span className="om-line">{i + 1}</span><code>{line || ' '}</code></div>)}</div>
+        <div className="om-problems"><div className="om-problem-tabs"><span>Problems <i>{fixed ? 0 : 2}</i></span><span>Output</span><span>Tests</span><span>Terminal</span></div>{fixed ? <p className="om-success"><Check size={13}/> Query parameterized. Findings resolved.</p> : <><p><CircleAlert size={13}/><span>Possible SQL injection</span><em>High</em></p><p><CircleAlert size={13}/><span>Unvalidated user input</span><em>High</em></p></>}<div className="om-problem-footer"><GitBranch size={11}/> main <span>TypeScript · UTF-8</span></div></div>
+      </div>
+      <aside className="om-suggestions"><h4><Sparkles size={14}/> AI Suggestions</h4>{[[Shield, 'Fix security issue', 'Use a parameterized query.'], [Zap, 'Validate input', 'Keep your data predictable.'], [FlaskConical, 'Add tests', 'Cover the edge cases.']].map(([Icon, title, text], i) => { const I = Icon as typeof Shield; return <div className="om-suggestion" key={String(title)}><I size={16}/><div><b>{String(title)}</b><p>{String(text)}</p>{i === 0 && <button onClick={() => setFixed(!fixed)} aria-label={fixed ? 'Reset example fix' : 'Apply example security fix'}>{fixed ? 'Undo' : 'Apply'}{fixed && <Check size={10}/>}</button>}</div></div>; })}<div className="om-preview-label">{interactive ? 'Interactive example' : 'Product preview'} · Try Apply</div></aside>
+    </div>
+  </div>;
+}
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [demoCode, setDemoCode] = useState(`// Premium AI-Powered Analyzer
-function processUserData(user) {
-  const query = "SELECT * FROM users WHERE id = " + user.id;
-  db.execute(query); // ⚠️ Critical security alert!
-  
-  if (user.age < 18) {
-    return { status: "minor" }
-  }
-  return { status: "adult" }
-}`);
-  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
-  const [analyzing, setAnalyzing] = useState(false);
-
-  const triggerDemoAnalysis = () => {
-    setAnalyzing(true);
-    setAiSuggestions([]);
-    setTimeout(() => {
-      setAnalyzing(false);
-      setAiSuggestions([
-        "🔴 SECURITY: SQL Injection vulnerability detected on line 3. Use parameterized queries or ORM to sanitize input.",
-        "🟡 STYLE: Missing semicolons or explicit typing on parameter 'user'.",
-        "🟢 QUALITY: Logical flow is optimal; consider adding early return guards."
-      ]);
-    }, 1200);
-  };
-
-  return (
-    <div className="min-h-screen bg-[#080911] text-slate-300 font-sans selection:bg-brand-purple/30">
-      {/* Navigation */}
-      <nav className="border-b border-white/5 bg-[#080911]/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <DragonLogo size={22} glow={true} />
-            <span className="font-bold text-white tracking-tight text-base">WyrmSentry</span>
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#041d2f] text-[#00a8ff] border border-[#00a8ff]/20 ml-1">AI</span>
-          </div>
-          
-          <div className="hidden md:flex items-center gap-8 text-[13px] font-medium text-slate-400">
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#demo" className="hover:text-white transition-colors">System Demo</a>
-            <a href="#playground" className="hover:text-white transition-colors">Interactive Playground</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-            <button onClick={() => navigate('/docs')} className="hover:text-white transition-colors bg-transparent border-none p-0">Docs</button>
-            <button onClick={() => navigate('/dashboard')} className="hover:text-white transition-colors bg-transparent border-none p-0">Dashboard</button>
-          </div>
-
-          <div className="flex items-center">
-            <button 
-              onClick={() => navigate('/dashboard')} 
-              className="px-4 py-1.5 bg-white text-black text-[13px] font-bold rounded-md shadow-sm hover:bg-slate-100 transition-all cursor-pointer"
-            >Launch App</button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="pt-24 pb-16 overflow-hidden relative text-center">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-purple/10 blur-[100px] rounded-full pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#00d2ff]/5 blur-[80px] rounded-full pointer-events-none" />
-        
-        <div className="max-w-4xl mx-auto px-6 relative z-10 flex flex-col items-center">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#18112e] border border-brand-purple/20 text-[10px] font-bold text-[#a78bfa] uppercase tracking-widest mb-6">
-            <Sparkles className="w-3 h-3" />
-            <span>Introducing WyrmSentry v2.0 Dragon-Eye AI Engine</span>
-          </div>
-          
-          <h1 className="text-5xl md:text-[56px] font-extrabold text-white tracking-tight leading-[1.1] mb-6 max-w-3xl mx-auto">
-            Dragon-Eye Code Review, <br className="hidden md:block" />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00d2ff] via-[#3a7bd5] to-[#8a2be2]">Unmatched Code Protection.</span>
-          </h1>
-          
-          <p className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8">
-            Enlist WyrmSentry to patrol your codebases. Upload scripts, analyze complex repositories, receive intelligent security patches, and incinerate security bugs instantly.
-          </p>
-          
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <button 
-              onClick={() => navigate('/dashboard')} 
-              className="px-5 py-2.5 bg-[#6d28d9] text-white font-bold rounded-md shadow-[0_0_15px_rgba(109,40,217,0.3)] hover:bg-[#5b21b6] transition-all flex items-center gap-2 text-[13px] cursor-pointer"
-            >Launch App <ArrowRight className="w-4 h-4" />
-            </button>
-            <button 
-              onClick={() => navigate('/dashboard')} 
-              className="px-5 py-2.5 bg-[#1e2029] border border-white/5 text-white font-bold rounded-md hover:bg-white/5 transition-all flex items-center gap-2 text-[13px] cursor-pointer"
-            >
-              <Play className="w-4 h-4" /> Watch Demo Video
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Interactive Playground */}
-      <section id="playground" className="py-24 relative max-w-4xl mx-auto px-6">
-          <div className="relative">
-            <div className="bg-[#0f111a] border border-white/10 rounded-2xl overflow-hidden relative shadow-2xl">
-              <div className="flex items-center justify-between px-4 py-3 bg-[#11131c] border-b border-white/5">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  <div className="w-3 h-3 rounded-full bg-amber-500" />
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                  <span className="ml-4 px-2 py-1 bg-[#0b0c11] border border-white/5 rounded text-xs font-mono text-slate-400">
-                    <span className="text-[#00d2ff] mr-1">{'>_'}</span>
-                    wyrmsentry_preview_sandbox.js
-                  </span>
-                </div>
-                <button 
-                  onClick={triggerDemoAnalysis}
-                  disabled={analyzing}
-                  className="px-4 py-1.5 bg-[#251b43] border border-[#6d28d9]/30 text-[#a78bfa] hover:bg-[#32235c] rounded font-bold text-xs flex items-center gap-2 transition-all disabled:opacity-50"
-                >
-                  {analyzing ? (
-                    <><Cpu className="w-3.5 h-3.5 animate-pulse" /> Analyzing...</>
-                  ) : (
-                    <><Cpu className="w-3.5 h-3.5" /> Analyze Snippet</>
-                  )}
-                </button>
-              </div>
-              
-              <div className="grid md:grid-cols-2 bg-[#0b0c11]">
-                <div className="p-4 border-r border-white/5">
-                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Editable Demo Playground</div>
-                  <textarea 
-                    value={demoCode}
-                    onChange={(e) => setDemoCode(e.target.value)}
-                    className="w-full h-48 bg-transparent text-sm font-mono text-slate-300 focus:outline-none resize-none leading-relaxed"
-                    spellCheck={false}
-                  />
-                </div>
-                <div className="p-4 bg-[#0d0e15]">
-                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">AI Suggestions Report</div>
-                  
-                  {aiSuggestions.length > 0 ? (
-                    <div className="space-y-3">
-                      {aiSuggestions.map((sug, i) => (
-                        <div key={i} className="text-sm font-mono text-slate-300 p-2 bg-white/5 rounded border border-white/5">{sug}</div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="h-48 flex flex-col items-center justify-center text-slate-500 text-sm">
-                      <Sparkles className="w-6 h-6 mb-2 opacity-50" />
-                      Click "Analyze Snippet" to test our AI review model.
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-      </section>
-
-      {/* Video Demo Section */}
-      <section id="demo" className="py-20 relative z-10 bg-[#080911]">
-        <div className="max-w-5xl mx-auto px-6 text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">
-            <span className="text-red-500 mr-2">●</span>Guardian System Walkthrough
-          </h2>
-          <p className="text-slate-400 max-w-2xl mx-auto">
-            Watch how WyrmSentry defends repositories, highlights vulnerabilities, compiles secure AST patches, and optimizes workflow metrics in real-time.
-          </p>
-        </div>
-        <div className="max-w-6xl mx-auto px-6">
-          <DemoVideo />
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="py-24 bg-[#0b0c11] border-y border-white/5 relative">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Engineered for High-Performance Teams</h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">
-              Everything you need to audit, secure, and compile elegant code in seconds, packaged in an absolute premium user interface.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            <div className="bg-[#12141c] border border-white/5 rounded-xl p-8 relative overflow-hidden group hover:border-white/10 transition-colors shadow-lg">
-              <div className="w-12 h-12 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6">
-                <Shield className="w-5 h-5 text-red-500" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-4">Vulnerability Guard</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Scan repositories for common CVEs, memory leaks, dependency risks, and secret leaks with full OWASP security compliance reporting.
-              </p>
-            </div>
-            
-            <div className="bg-[#12141c] border border-white/5 rounded-xl p-8 relative overflow-hidden group hover:border-white/10 transition-colors shadow-lg">
-              <div className="w-12 h-12 rounded-lg bg-[#00d2ff]/10 border border-[#00d2ff]/20 flex items-center justify-center mb-6">
-                <Zap className="w-5 h-5 text-[#00d2ff]" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-4">Performance Auditing</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Detect computational complexity bottlenecks, memory allocations, and recommend fast micro-optimizations inside active editors.
-              </p>
-            </div>
-            
-            <div className="bg-[#12141c] border border-white/5 rounded-xl p-8 relative overflow-hidden group hover:border-white/10 transition-colors shadow-lg">
-              <div className="w-12 h-12 rounded-lg bg-[#a78bfa]/10 border border-[#a78bfa]/20 flex items-center justify-center mb-6">
-                <GitPullRequest className="w-5 h-5 text-[#a78bfa]" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-4">Pull Request Integration</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Automatically review incoming pull requests with inline commentary, approve modifications, and output instant Merge Readiness Scores.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/5 bg-[#050608] py-16 px-6 text-slate-500 text-sm" data-physics="header">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-          <div className="space-y-4 col-span-1">
-            <div className="flex items-center gap-2">
-              <DragonLogo size={24} glow={false} />
-              <span className="font-extrabold text-white tracking-tight">WyrmSentry</span>
-            </div>
-            <p className="text-slate-400 leading-relaxed text-sm">
-              Next-generation code auditing, powered by intelligent dragon-eyed AI models, built for premium engineers.
-            </p>
-          </div>
-          
-          <div className="space-y-4">
-            <span className="font-bold text-white block">Resources</span>
-            <button onClick={() => navigate('/docs')} className="block text-slate-400 hover:text-white cursor-pointer bg-transparent border-none p-0">Documentation</button>
-            <a href="#demo" className="block text-slate-400 hover:text-white">API Playground</a>
-            <a href="#demo" className="block text-slate-400 hover:text-white">Live Demo</a>
-          </div>
-          
-          <div className="space-y-4">
-            <span className="font-bold text-white block">Company</span>
-            <a href="#" className="block text-slate-400 hover:text-white">Privacy Policy</a>
-            <a href="#" className="block text-slate-400 hover:text-white">Terms of Use</a>
-            <a href="#" className="block text-slate-400 hover:text-white">Press Kit</a>
-          </div>
-          
-          <div className="space-y-4">
-            <span className="font-bold text-white block">Integrations</span>
-            <span className="text-slate-400 flex items-center gap-2">
-              <Github className="w-4 h-4" />
-              <span>GitHub App</span>
-            </span>
-            <span className="text-slate-400 flex items-center gap-2">
-              <Award className="w-4 h-4" />
-              <span>Vercel Deployments</span>
-            </span>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-slate-600">
-          <span>&copy; 2026 WyrmSentry AI, Inc. All rights reserved.</span>
-          <div className="flex gap-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-slate-400 transition-colors">Twitter</a>
-            <a href="#" className="hover:text-slate-400 transition-colors">GitHub</a>
-            <a href="#" className="hover:text-slate-400 transition-colors">Discord</a>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [modal, setModal] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailStatus, setEmailStatus] = useState('');
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => { if (modal && !dialog.current?.open) dialog.current?.showModal(); else if (!modal && dialog.current?.open) dialog.current.close(); }, [modal]);
+  const scrollTo = (id: string) => { (id === 'om-main' ? document.querySelector('.om-header') : document.getElementById(id))?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); setMobileOpen(false); };
+  const start = () => navigate('/review');
+  const resource = (name: string) => { if (name === 'Features') scrollTo('features'); else if (name === 'Integrations') navigate('/repo'); else if (name === 'Docs' || name === 'Guides') navigate('/docs'); else if (name === 'Community') window.open('https://github.com/Abhiram-C-Divakaran/OminiCode', '_blank', 'noopener,noreferrer'); else setModal(name); };
+  return <div className="om-landing">
+    <a className="om-skip" href="#om-main" onClick={e => { e.preventDefault(); document.getElementById('om-main')?.focus(); }}>Skip to content</a>
+    <header className="om-header"><div className="om-container om-nav"><button className="om-brand-button" onClick={() => scrollTo('om-main')} aria-label="OminiCode home"><Brand/></button><nav className={mobileOpen ? 'om-nav-links is-open' : 'om-nav-links'} aria-label="Main navigation">{[['Product', 'product'], ['Features', 'features'], ['Solutions', 'solutions']].map(([title, id]) => <button key={title} onClick={() => scrollTo(id)}>{title}<ChevronDown size={12}/></button>)}<button onClick={() => { setModal('Pricing'); setMobileOpen(false); }}>Pricing<ChevronDown size={12}/></button><button onClick={() => navigate('/docs')}>Resources<ChevronDown size={12}/></button></nav><div className="om-nav-actions"><button className="om-icon-button om-search-button" aria-label="Search features" onClick={() => setModal('Search')}><Search size={18}/></button><button className="om-signin" onClick={start}>Sign in</button><button className="om-button om-primary om-small" onClick={start}>Get Started<ArrowUpRight size={14}/></button><button className="om-icon-button om-mobile-toggle" aria-label={mobileOpen ? 'Close menu' : 'Open menu'} aria-expanded={mobileOpen} onClick={() => setMobileOpen(!mobileOpen)}>{mobileOpen ? <X/> : <Menu/>}</button></div></div></header>
+    <main id="om-main" tabIndex={-1}>
+      <section className="om-hero"><div className="om-hero-art"><img src="/landing/workstation.png" alt="OminiCode running on a laptop in a violet-lit developer workspace" fetchPriority="high"/></div><div className="om-container om-hero-content"><div className="om-eyebrow"><span/> THE AI-NATIVE DEVELOPMENT PLATFORM</div><h1>Build without<br/><span className="om-gradient">boundaries.</span></h1><p>OminiCode combines AI, security, testing, and collaboration in one seamless platform — so you can write, review, fix, and ship high-quality software faster.</p><div className="om-button-row"><button className="om-button om-primary" onClick={start}>Get Started Free<ArrowRight size={17}/></button><button className="om-button om-outline" onClick={() => setModal('Demo')}><Play size={15}/>Watch Demo</button></div><div className="om-trust">{['No credit card required', 'Free tier available', 'Loved by developers'].map(t => <span key={t}><Check size={12}/>{t}</span>)}</div></div></section>
+      <section className="om-integrations" aria-label="Developer ecosystem"><div className="om-container"><p>AT HOME IN YOUR DEVELOPER ECOSYSTEM</p><div className="om-logos"><span className="om-google">Google</span><span><i className="om-ms-logo"/>Microsoft</span><span><Github/>GitHub</span><span><i className="om-vercel"/>Vercel</span><span className="om-aws">aws<span>⌣</span></span><span><Zap/>Firebase</span><span><MessageCircle/>Discord</span><span><b className="om-notion">N</b>Notion</span></div></div></section>
+      <section id="features" className="om-section om-features"><div className="om-container"><div className="om-section-heading"><div><span className="om-pill">POWERFUL FEATURES</span><h2>Everything you need.<br className="om-mobile-break"/> <span className="om-gradient">All in one place.</span></h2><p>From your first line to your next launch. Everything you need<br className="om-desktop-break"/> to build, secure, and ship better software.</p></div><button className="om-button om-outline om-explore" onClick={() => navigate('/docs')}>Explore All Features<ArrowRight size={16}/></button></div><div className="om-feature-grid">{features.map(({icon: Icon, title, text, color, route}) => <button className="om-feature" key={title} onClick={() => navigate(route)}><span className={`om-feature-icon ${color}`}><Icon size={28}/></span><h3>{title}</h3><p>{text}</p><ArrowRight className="om-card-arrow" size={17}/></button>)}</div></div></section>
+      <section id="product" className="om-section om-product"><div className="om-container om-product-layout"><div className="om-product-copy"><span className="om-pill">SEE OMINICODE IN ACTION</span><h2>From code to confidence<br/><span className="om-gradient">in seconds.</span></h2><p>Write code, get AI-powered feedback, apply fixes, run tests, and deploy — all without leaving your workflow.</p><ul className="om-checklist">{['Real-time AI suggestions', 'Detect and fix security issues', 'Generate and run tests', 'Seamless GitHub integration', 'Built for individuals and teams'].map(item => <li key={item}><Check size={13}/>{item}</li>)}</ul><div className="om-button-row"><button className="om-button om-primary" onClick={() => setModal('Demo')}>Watch a Live Demo<ArrowRight size={15}/></button><button className="om-button om-outline" onClick={() => navigate('/docs')}>View Docs</button></div></div><div className="om-product-visual"><IDEPreview/><div className="om-preview-caption"><span className="om-status-dot"/> A little intelligence. A lot more possibility.</div></div></div></section>
+      <section className="om-metrics"><div className="om-container"><div className="om-metric-heading"><span className="om-eyebrow">REAL IMPACT. REAL RESULTS.</span><small>Illustrative product goals</small></div><div className="om-metric-grid">{[[Zap, '10x', 'Faster Reviews'], [Shield, '90%', 'Fewer Vulnerabilities'], [GitBranch, '50%', 'Less Time on Tests'], [Users, '10,000+', 'Developers']].map(([Icon, value, label], i) => { const I = Icon as typeof Zap; return <div className="om-metric" key={String(label)}><I size={36} className={i === 1 ? 'om-teal' : ''}/><div><strong>{String(value)}</strong><span>{String(label)}</span></div></div>; })}</div></div></section>
+      <section id="solutions" className="om-section om-solutions"><div className="om-container"><div className="om-centered-heading"><span className="om-eyebrow">BUILT FOR EVERY BUILDER</span><h2>Who is OminiCode for?</h2><p>Whether you're building solo or at scale, OminiCode adapts to your workflow.</p></div><div className="om-audience-grid">{audiences.map(([title, text], i) => <button className="om-audience" onClick={() => navigate(i === 0 ? '/review' : '/team')} key={title}><div className={`om-audience-image om-photo-${i}`} role="img" aria-label={title + ' working in a modern developer workspace'}/><div className="om-audience-copy"><h3>{title}<ArrowUpRight size={14}/></h3><p>{text}</p></div></button>)}</div></div></section>
+      <section className="om-final-cta"><div className="om-container"><div className="om-cta-copy"><h2>A more innovative<br/>tomorrow starts <span className="om-gradient">today.</span></h2><p>Join a new generation of developers building<br className="om-desktop-break"/> safer, better software with OminiCode.</p><div className="om-button-row"><button className="om-button om-primary" onClick={start}>Get Started Free<ArrowRight size={16}/></button><button className="om-button om-outline" onClick={() => setModal('Contact')}><MessageCircle size={16}/>Talk to Sales</button></div></div><p className="om-handwriting">Better tools.<br/>Brighter ideas.<br/>A more open tomorrow.<span/></p></div></section>
+    </main>
+    <footer className="om-footer"><div className="om-container"><div className="om-footer-grid"><div className="om-footer-brand"><Brand/><p>Build. Secure. Ship.<br/>A more open tomorrow.</p><div className="om-socials"><a href="https://github.com/Abhiram-C-Divakaran/OminiCode" target="_blank" rel="noreferrer" aria-label="OminiCode on GitHub"><Github size={18}/></a><button aria-label="OminiCode community" onClick={() => resource('Community')}><MessageCircle size={18}/></button><button aria-label="Contact OminiCode" onClick={() => setModal('Contact')}><Send size={17}/></button></div></div>{[['Product', 'Features', 'Pricing', 'Integrations', 'Changelog'], ['Resources', 'Docs', 'Guides', 'Blog', 'Community'], ['Company', 'About', 'Careers', 'Contact', 'Privacy']].map(([heading, ...links]) => <div className="om-footer-column" key={heading}><h4>{heading}</h4>{links.map(link => <button key={link} onClick={() => resource(link)}>{link}</button>)}</div>)}<div className="om-newsletter"><h4>Stay in the loop</h4><p>Good things are on the horizon.<br/>Save your email for future updates.</p><form onSubmit={e => { e.preventDefault(); try { localStorage.setItem('ominicode-update-email', email); setEmailStatus('Saved on this device. Email updates are not connected yet.'); } catch { setEmailStatus('Your browser could not save this. Follow updates on GitHub instead.'); } }}><label className="om-sr-only" htmlFor="om-email">Email address</label><input id="om-email" type="email" placeholder="Enter your email" required value={email} onChange={e => setEmail(e.target.value)}/><button aria-label="Save email for updates" type="submit"><ArrowRight size={19}/></button></form><span className="om-email-status" role="status">{emailStatus}</span></div></div><div className="om-footer-bottom"><span>© {new Date().getFullYear()} OminiCode. All rights reserved.</span><span>Made for builders, by builders.<Heart size={12}/></span></div></div></footer>
+    <dialog ref={dialog} aria-label={modal === 'Demo' ? 'Interactive code review demo' : modal || 'OminiCode information'} className={`om-dialog ${modal === 'Demo' ? 'om-demo-dialog' : ''}`} onCancel={() => setModal(null)} onClose={() => setModal(null)} onClick={e => { if (e.target === e.currentTarget) setModal(null); }}><div className="om-dialog-content"><button className="om-dialog-close om-icon-button" autoFocus aria-label="Close dialog" onClick={() => setModal(null)}><X size={21}/></button>{modal === 'Demo' ? <><span className="om-pill">YOUR NEXT COMMIT, WITH CONFIDENCE</span><h2>A small fix. A safer application.</h2><p>Try the Apply button to replace an unsafe query with a parameterized one. This example runs entirely in your browser.</p><IDEPreview interactive/><button className="om-button om-primary" onClick={start}>Try your own code<ArrowRight size={16}/></button></> : modal === 'Search' ? <><h2>What do you want to build?</h2><div className="om-modal-search"><Search size={20}/><input aria-label="Search platform features" placeholder="Search features, tools, and workflows…" value={query} onChange={e => setQuery(e.target.value)}/></div><div className="om-search-results">{features.filter(f => (f.title + f.text).toLowerCase().includes(query.toLowerCase())).map(f => <button key={f.title} onClick={() => navigate(f.route)}><f.icon size={20}/><span>{f.title}<small>{f.text}</small></span><ArrowUpRight size={16}/></button>)}{!features.some(f => (f.title + f.text).toLowerCase().includes(query.toLowerCase())) && <p>No matching features. Try “security”, “tests”, or “team”.</p>}</div></> : modal && resources[modal] ? <><span className="om-pill">OMINICODE</span><h2>{modal === 'Contact' ? 'Let’s talk.' : modal}</h2><p>{resources[modal].intro}</p><ul className="om-resource-list">{resources[modal].items.map(item => <li key={item}>{item}</li>)}</ul><div className="om-button-row"><button className="om-button om-primary" onClick={start}>Open Workspace<ArrowRight size={16}/></button><a className="om-button om-outline" href="https://github.com/Abhiram-C-Divakaran/OminiCode/issues" target="_blank" rel="noreferrer">Visit GitHub<ArrowUpRight size={16}/></a></div></> : null}</div></dialog>
+  </div>;
 }

@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { Github, FolderGit2, AlertCircle, ArrowRight, FileCode, CheckCircle2, Loader2, GitCommit } from 'lucide-react';
+import { ArrowRight,FileCode,FolderGit2,GitCommit,Github,Loader2 } from 'lucide-react';
+import { useEffect,useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useReviews } from '../../context/ReviewContext';
 

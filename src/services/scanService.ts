@@ -1,4 +1,4 @@
-import { ScanMode, Finding } from '../types/scan';
+import { Finding,ScanMode } from '../types/scan';
 
 export const scanService = {
   startScan: async (repositoryId: string, branch: string, commitSha: string, filePath: string, scanMode: ScanMode, language: string) => {

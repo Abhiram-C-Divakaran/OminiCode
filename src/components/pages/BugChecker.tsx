@@ -1,12 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Shield, Play, ChevronDown, Copy, Maximize2, MoreHorizontal, 
-  Wand2, Info, FlaskConical, GitBranch, Bug, SlidersHorizontal, 
-  ExternalLink, Eye, Activity, ShieldCheck, Code2, ShieldAlert,
-  Check, X, FileCode2, CheckCircle, Folder, Search
+import Editor,{ DiffEditor } from '@monaco-editor/react';
+import {
+Activity,
+Check,
+CheckCircle,
+ChevronDown,
+Code2,
+ExternalLink,
+FileCode2,
+FlaskConical,
+Folder,
+GitBranch,
+Play,
+Shield,
+ShieldAlert,
+ShieldCheck,
+SlidersHorizontal,
+Wand2
 } from 'lucide-react';
-import Editor, { DiffEditor } from '@monaco-editor/react';
-import { RepositoryService, ScanService, FixService } from '../../services/codeReviewService';
+import { useEffect,useRef,useState } from 'react';
+import { FixService,RepositoryService,ScanService } from '../../services/codeReviewService';
 
 const SCAN_MODES = [
   { value: 'quick', label: 'Quick Scan', desc: 'Changed/current file, fastest rules' },
@@ -216,18 +228,18 @@ export default function BugChecker() {
   };
 
   return (
-    <div className="flex-1 h-full bg-[#060d17] flex flex-col min-h-0 overflow-hidden text-sm">
+    <div className="flex-1 h-full bg-[var(--color-background)] flex flex-col min-h-0 overflow-hidden text-sm">
       {/* Top Nav */}
-      <div className="h-14 flex-none border-b border-[#1b2938] bg-[#0b1523] px-4 flex items-center justify-between">
+      <div className="h-14 flex-none border-b border-[var(--color-border)] bg-[var(--color-panel)] px-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#060d17] border border-[#1b2938] rounded-md relative">
-             <Code2 className="w-4 h-4 text-[#8eaccb]" />
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-background)] border border-[var(--color-border)] rounded-md relative">
+             <Code2 className="w-4 h-4 text-[var(--color-text-secondary)]" />
              <div className="relative">
-               <button onClick={() => setRepoOpen(!repoOpen)} className="flex items-center gap-2 text-white font-medium hover:text-[#2684ff] transition-colors cursor-pointer">
+               <button onClick={() => setRepoOpen(!repoOpen)} className="flex items-center gap-2 text-white font-medium hover:text-[var(--color-primary-indigo)] transition-colors cursor-pointer">
                  {activeRepo ? activeRepo.name : 'Select Repository'} <ChevronDown className="w-3.5 h-3.5" />
                </button>
                {repoOpen && (
-                 <div className="absolute top-full left-0 mt-2 w-64 bg-[#0b1523] border border-[#1b2938] rounded-lg shadow-xl z-50">
+                 <div className="absolute top-full left-0 mt-2 w-64 bg-[var(--color-panel)] border border-[var(--color-border)] rounded-lg shadow-xl z-50">
                    {repositories.map(r => (
                      <button key={r.id} onClick={() => { setActiveRepo(r); setRepoOpen(false); }} className="w-full text-left px-4 py-2 hover:bg-[#101a28] text-white">
                        {r.name}
@@ -237,13 +249,13 @@ export default function BugChecker() {
                )}
              </div>
           </div>
-          <span className="text-[#627d9c]">/</span>
+          <span className="text-[var(--color-text-muted)]">/</span>
           <div className="relative">
-             <button onClick={() => setBranchOpen(!branchOpen)} className="flex items-center gap-2 text-white font-medium hover:text-[#2684ff] transition-colors cursor-pointer px-3 py-1.5 bg-[#060d17] border border-[#1b2938] rounded-md">
-               <GitBranch className="w-4 h-4 text-[#8eaccb]" /> {activeBranch} <ChevronDown className="w-3.5 h-3.5" />
+             <button onClick={() => setBranchOpen(!branchOpen)} className="flex items-center gap-2 text-white font-medium hover:text-[var(--color-primary-indigo)] transition-colors cursor-pointer px-3 py-1.5 bg-[var(--color-background)] border border-[var(--color-border)] rounded-md">
+               <GitBranch className="w-4 h-4 text-[var(--color-text-secondary)]" /> {activeBranch} <ChevronDown className="w-3.5 h-3.5" />
              </button>
              {branchOpen && (
-               <div className="absolute top-full left-0 mt-2 w-48 bg-[#0b1523] border border-[#1b2938] rounded-lg shadow-xl z-50">
+               <div className="absolute top-full left-0 mt-2 w-48 bg-[var(--color-panel)] border border-[var(--color-border)] rounded-lg shadow-xl z-50">
                  {branches.map(b => (
                    <button key={b} onClick={() => { setActiveBranch(b); setBranchOpen(false); }} className="w-full text-left px-4 py-2 hover:bg-[#101a28] text-white">
                      {b}
@@ -256,11 +268,11 @@ export default function BugChecker() {
         
         <div className="flex items-center gap-3">
           <div className="relative">
-            <button onClick={() => setLanguageOpen(!languageOpen)} className="flex items-center gap-2 text-[#8eaccb] hover:text-white px-3 py-1.5 border border-[#1b2938] rounded-md bg-[#060d17] cursor-pointer">
+            <button onClick={() => setLanguageOpen(!languageOpen)} className="flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-white px-3 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-background)] cursor-pointer">
               {language} <ChevronDown className="w-3.5 h-3.5" />
             </button>
             {languageOpen && (
-               <div className="absolute top-full right-0 mt-2 w-48 max-h-64 overflow-y-auto custom-scrollbar bg-[#0b1523] border border-[#1b2938] rounded-lg shadow-xl z-50">
+               <div className="absolute top-full right-0 mt-2 w-48 max-h-64 overflow-y-auto custom-scrollbar bg-[var(--color-panel)] border border-[var(--color-border)] rounded-lg shadow-xl z-50">
                  {LANGUAGES.map(l => (
                    <button key={l} onClick={() => { setLanguage(l); setLanguageOpen(false); }} className="w-full text-left px-4 py-2 hover:bg-[#101a28] text-white">
                      {l}
@@ -271,15 +283,15 @@ export default function BugChecker() {
           </div>
           
           <div className="relative">
-            <button onClick={() => setScanModeOpen(!scanModeOpen)} className="flex items-center gap-2 text-[#8eaccb] hover:text-white px-3 py-1.5 border border-[#1b2938] rounded-md bg-[#060d17] cursor-pointer">
+            <button onClick={() => setScanModeOpen(!scanModeOpen)} className="flex items-center gap-2 text-[var(--color-text-secondary)] hover:text-white px-3 py-1.5 border border-[var(--color-border)] rounded-md bg-[var(--color-background)] cursor-pointer">
               <Shield className="w-4 h-4" /> {SCAN_MODES.find(m => m.value === scanMode)?.label} <ChevronDown className="w-3.5 h-3.5" />
             </button>
             {scanModeOpen && (
-               <div className="absolute top-full right-0 mt-2 w-64 bg-[#0b1523] border border-[#1b2938] rounded-lg shadow-xl z-50">
+               <div className="absolute top-full right-0 mt-2 w-64 bg-[var(--color-panel)] border border-[var(--color-border)] rounded-lg shadow-xl z-50">
                  {SCAN_MODES.map(m => (
-                   <button key={m.value} onClick={() => { setScanMode(m.value); setScanModeOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-[#101a28] border-b border-[#1b2938] last:border-0">
+                   <button key={m.value} onClick={() => { setScanMode(m.value); setScanModeOpen(false); }} className="w-full text-left px-4 py-3 hover:bg-[#101a28] border-b border-[var(--color-border)] last:border-0">
                      <div className="text-white font-medium">{m.label}</div>
-                     <div className="text-[#627d9c] text-xs mt-0.5">{m.desc}</div>
+                     <div className="text-[var(--color-text-muted)] text-xs mt-0.5">{m.desc}</div>
                    </button>
                  ))}
                </div>
@@ -289,7 +301,7 @@ export default function BugChecker() {
           <button 
             onClick={handleStartScan}
             disabled={isScanning || !activeRepo}
-            className="flex items-center gap-2 bg-[#2684ff] hover:bg-[#1f6bd9] text-white px-4 py-1.5 rounded-md font-medium transition-colors cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-2 bg-[var(--color-primary-indigo)] hover:bg-[#1f6bd9] text-white px-4 py-1.5 rounded-md font-medium transition-colors cursor-pointer disabled:opacity-50"
           >
             {isScanning ? <Activity className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
             {isScanning ? 'Scanning...' : 'Find Bugs'}
@@ -299,8 +311,8 @@ export default function BugChecker() {
 
       <div className="flex-1 flex min-h-0">
         {/* Repo Browser Sidebar */}
-        <div className="w-64 border-r border-[#1b2938] bg-[#0b1523] flex flex-col flex-none hidden md:flex">
-          <div className="p-3 border-b border-[#1b2938] text-[#8eaccb] font-medium text-xs uppercase tracking-wider flex items-center gap-2">
+        <div className="w-64 border-r border-[var(--color-border)] bg-[var(--color-panel)] flex flex-col flex-none hidden md:flex">
+          <div className="p-3 border-b border-[var(--color-border)] text-[var(--color-text-secondary)] font-medium text-xs uppercase tracking-wider flex items-center gap-2">
             <Folder className="w-4 h-4" /> Explorer
           </div>
           <div className="flex-1 overflow-y-auto p-2 custom-scrollbar space-y-0.5">
@@ -308,49 +320,49 @@ export default function BugChecker() {
               <button 
                 key={idx} 
                 onClick={() => handleFileSelect(item)}
-                className={`w-full text-left px-2 py-1.5 rounded flex items-center gap-2 text-sm transition-colors cursor-pointer ${activeFile?.path === item.path ? 'bg-[#2684ff]/10 text-[#2684ff]' : 'text-[#8eaccb] hover:bg-[#101a28] hover:text-white'}`}
+                className={`w-full text-left px-2 py-1.5 rounded flex items-center gap-2 text-sm transition-colors cursor-pointer ${activeFile?.path === item.path ? 'bg-[var(--color-primary-indigo)]/10 text-[var(--color-primary-indigo)]' : 'text-[var(--color-text-secondary)] hover:bg-[#101a28] hover:text-white'}`}
               >
                 {item.type === 'folder' ? <Folder className="w-4 h-4 shrink-0" /> : <FileCode2 className="w-4 h-4 shrink-0" />}
                 <span className="truncate">{item.name}</span>
               </button>
             ))}
             {treeItems.length === 0 && (
-               <div className="px-2 py-4 text-center text-[#627d9c] text-xs">No files found.</div>
+               <div className="px-2 py-4 text-center text-[var(--color-text-muted)] text-xs">No files found.</div>
             )}
           </div>
         </div>
 
         {/* Editor Area */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#060d17]">
+        <div className="flex-1 flex flex-col min-w-0 bg-[var(--color-background)]">
           {isScanning && (
-            <div className="bg-[#101a28] border-b border-[#1b2938] px-4 py-3 flex items-center justify-between">
+            <div className="bg-[#101a28] border-b border-[var(--color-border)] px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Activity className="w-5 h-5 text-[#2684ff] animate-spin" />
+                <Activity className="w-5 h-5 text-[var(--color-primary-indigo)] animate-spin" />
                 <div>
                   <div className="text-white font-medium">Scan in progress...</div>
-                  <div className="text-[#8eaccb] text-xs">{currentStage || 'Initializing...'}</div>
+                  <div className="text-[var(--color-text-secondary)] text-xs">{currentStage || 'Initializing...'}</div>
                 </div>
               </div>
               <div className="w-64">
-                <div className="flex items-center justify-between text-xs text-[#8eaccb] mb-1">
+                <div className="flex items-center justify-between text-xs text-[var(--color-text-secondary)] mb-1">
                   <span>Progress</span>
                   <span>{scanProgress}%</span>
                 </div>
-                <div className="h-1.5 w-full bg-[#1b2938] rounded-full overflow-hidden">
-                  <div className="h-full bg-[#2684ff] transition-all duration-300" style={{ width: `${scanProgress}%` }}></div>
+                <div className="h-1.5 w-full bg-[var(--color-border)] rounded-full overflow-hidden">
+                  <div className="h-full bg-[var(--color-primary-indigo)] transition-all duration-300" style={{ width: `${scanProgress}%` }}></div>
                 </div>
               </div>
             </div>
           )}
 
           {!isScanning && scanInfo && (
-            <div className="bg-[#101a28] border-b border-[#1b2938] px-4 py-2.5 flex items-center justify-between">
+            <div className="bg-[#101a28] border-b border-[var(--color-border)] px-4 py-2.5 flex items-center justify-between">
               <div className="flex items-center gap-3 text-sm">
-                <ShieldCheck className="w-5 h-5 text-[#00d3a0]" />
+                <ShieldCheck className="w-5 h-5 text-[var(--color-success)]" />
                 <span className="text-white font-medium">Scan Completed</span>
-                <span className="text-[#8eaccb]">Found {findings.length} issues in {scanInfo.repositoryId}</span>
+                <span className="text-[var(--color-text-secondary)]">Found {findings.length} issues in {scanInfo.repositoryId}</span>
               </div>
-              <button className="text-[#2684ff] hover:text-[#1f6bd9] text-sm flex items-center gap-1">
+              <button className="text-[var(--color-primary-indigo)] hover:text-[#1f6bd9] text-sm flex items-center gap-1">
                 View Report <ExternalLink className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -394,15 +406,15 @@ export default function BugChecker() {
         </div>
 
         {/* Findings Panel */}
-        <div className="w-[400px] border-l border-[#1b2938] bg-[#0b1523] flex flex-col flex-none">
+        <div className="w-[400px] border-l border-[var(--color-border)] bg-[var(--color-panel)] flex flex-col flex-none">
           {/* Header */}
-          <div className="p-4 border-b border-[#1b2938]">
+          <div className="p-4 border-b border-[var(--color-border)]">
              <div className="flex items-center justify-between mb-4">
                <h2 className="text-white font-bold flex items-center gap-2">
-                 <ShieldAlert className="w-4 h-4 text-[#2684ff]" /> Analysis Results
+                 <ShieldAlert className="w-4 h-4 text-[var(--color-primary-indigo)]" /> Analysis Results
                </h2>
                <div className="flex items-center gap-2">
-                 <button className="p-1.5 text-[#8eaccb] hover:text-white hover:bg-[#101a28] rounded cursor-pointer transition-colors">
+                 <button className="p-1.5 text-[var(--color-text-secondary)] hover:text-white hover:bg-[#101a28] rounded cursor-pointer transition-colors">
                    <SlidersHorizontal className="w-4 h-4" />
                  </button>
                </div>
@@ -410,13 +422,13 @@ export default function BugChecker() {
              
              {/* Severity Filters */}
              <div className="flex flex-wrap gap-2">
-               <button onClick={() => setSeverityFilter('all')} className={`px-2.5 py-1 text-xs rounded-full font-medium transition-colors border ${severityFilter === 'all' ? 'bg-[#2684ff]/10 border-[#2684ff]/30 text-[#2684ff]' : 'bg-[#101a28] border-[#1b2938] text-[#8eaccb] hover:border-[#627d9c]'}`}>
+               <button onClick={() => setSeverityFilter('all')} className={`px-2.5 py-1 text-xs rounded-full font-medium transition-colors border ${severityFilter === 'all' ? 'bg-[var(--color-primary-indigo)]/10 border-[var(--color-primary-indigo)]/30 text-[var(--color-primary-indigo)]' : 'bg-[#101a28] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-muted)]'}`}>
                  All <span className="opacity-70 ml-1">{counts.all}</span>
                </button>
-               <button onClick={() => setSeverityFilter('Critical')} className={`px-2.5 py-1 text-xs rounded-full font-medium transition-colors border ${severityFilter === 'Critical' ? 'bg-red-500/10 border-red-500/30 text-red-500' : 'bg-[#101a28] border-[#1b2938] text-red-500/70 hover:border-red-500/50'}`}>
+               <button onClick={() => setSeverityFilter('Critical')} className={`px-2.5 py-1 text-xs rounded-full font-medium transition-colors border ${severityFilter === 'Critical' ? 'bg-red-500/10 border-red-500/30 text-red-500' : 'bg-[#101a28] border-[var(--color-border)] text-red-500/70 hover:border-red-500/50'}`}>
                  Critical <span className="opacity-70 ml-1">{counts.critical}</span>
                </button>
-               <button onClick={() => setSeverityFilter('High')} className={`px-2.5 py-1 text-xs rounded-full font-medium transition-colors border ${severityFilter === 'High' ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : 'bg-[#101a28] border-[#1b2938] text-amber-500/70 hover:border-amber-500/50'}`}>
+               <button onClick={() => setSeverityFilter('High')} className={`px-2.5 py-1 text-xs rounded-full font-medium transition-colors border ${severityFilter === 'High' ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : 'bg-[#101a28] border-[var(--color-border)] text-amber-500/70 hover:border-amber-500/50'}`}>
                  High <span className="opacity-70 ml-1">{counts.high}</span>
                </button>
              </div>
@@ -424,7 +436,7 @@ export default function BugChecker() {
           
           <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-3">
              {findings.length === 0 && !isScanning && !scanStatus && (
-               <div className="text-center p-8 text-[#627d9c]">
+               <div className="text-center p-8 text-[var(--color-text-muted)]">
                  <Shield className="w-12 h-12 mx-auto mb-4 opacity-50" />
                  <p className="font-medium text-white mb-1">Ready to analyze</p>
                  <p className="text-xs leading-relaxed">Run a scan to inspect this code for security, reliability, performance and quality issues.</p>
@@ -432,92 +444,92 @@ export default function BugChecker() {
              )}
              
              {findings.length === 0 && !isScanning && scanStatus === 'COMPLETED' && (
-               <div className="text-center p-8 text-[#00d3a0]">
+               <div className="text-center p-8 text-[var(--color-success)]">
                  <CheckCircle className="w-12 h-12 mx-auto mb-4" />
                  <p className="font-medium text-white mb-1">No findings detected</p>
-                 <p className="text-xs text-[#627d9c] leading-relaxed">No findings were detected by the successfully completed analysis engines.</p>
+                 <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">No findings were detected by the successfully completed analysis engines.</p>
                </div>
              )}
              
              {getFilteredFindings().map(f => (
-               <div key={f.id} className={`bg-[#060d17] border rounded-lg overflow-hidden transition-all ${selectedFinding?.id === f.id ? 'border-[#2684ff] shadow-[0_0_10px_rgba(38,132,255,0.1)]' : 'border-[#1b2938] hover:border-[#627d9c]'}`}>
+               <div key={f.id} className={`bg-[var(--color-background)] border rounded-lg overflow-hidden transition-all ${selectedFinding?.id === f.id ? 'border-[var(--color-primary-indigo)] shadow-[0_0_10px_rgba(38,132,255,0.1)]' : 'border-[var(--color-border)] hover:border-[var(--color-text-muted)]'}`}>
                  <div className="p-3 cursor-pointer" onClick={() => { setSelectedFinding(f); jumpToLine(f.startLine); }}>
                    <div className="flex items-start justify-between mb-2">
                      <div className="flex items-center gap-2">
                        <span className={`w-2 h-2 rounded-full ${f.severity === 'Critical' ? 'bg-red-500' : 'bg-amber-500'}`}></span>
                        <span className="text-white font-medium text-sm">{f.title}</span>
                      </div>
-                     <span className="text-xs font-mono text-[#627d9c] bg-[#101a28] px-1.5 py-0.5 rounded">{f.cwe}</span>
+                     <span className="text-xs font-mono text-[var(--color-text-muted)] bg-[#101a28] px-1.5 py-0.5 rounded">{f.cwe}</span>
                    </div>
-                   <p className="text-[#8eaccb] text-xs line-clamp-2 leading-relaxed mb-3">{f.description}</p>
+                   <p className="text-[var(--color-text-secondary)] text-xs line-clamp-2 leading-relaxed mb-3">{f.description}</p>
                    
                    <div className="flex items-center justify-between text-xs">
-                     <div className="flex items-center gap-2 text-[#627d9c]">
+                     <div className="flex items-center gap-2 text-[var(--color-text-muted)]">
                        <FileCode2 className="w-3.5 h-3.5" /> 
                        <span className="truncate max-w-[150px]">{f.file}</span>
-                       <button onClick={(e) => { e.stopPropagation(); jumpToLine(f.startLine); }} className="hover:text-white transition-colors bg-[#101a28] px-1.5 py-0.5 rounded border border-[#1b2938]">L{f.startLine}</button>
+                       <button onClick={(e) => { e.stopPropagation(); jumpToLine(f.startLine); }} className="hover:text-white transition-colors bg-[#101a28] px-1.5 py-0.5 rounded border border-[var(--color-border)]">L{f.startLine}</button>
                      </div>
-                     <div className="text-[#627d9c] flex items-center gap-1">
+                     <div className="text-[var(--color-text-muted)] flex items-center gap-1">
                         <Activity className="w-3.5 h-3.5" /> {f.confidence}%
                      </div>
                    </div>
                  </div>
                  
                  {selectedFinding?.id === f.id && (
-                   <div className="border-t border-[#1b2938] p-3 bg-[#0b1523]">
+                   <div className="border-t border-[var(--color-border)] p-3 bg-[var(--color-panel)]">
                      <div className="mb-4">
                        <h4 className="text-xs font-medium text-white mb-1.5">Evidence</h4>
-                       <div className="bg-[#060d17] p-2 rounded border border-[#1b2938] font-mono text-xs text-[#d1d5db] overflow-x-auto whitespace-pre">
+                       <div className="bg-[var(--color-background)] p-2 rounded border border-[var(--color-border)] font-mono text-xs text-[#d1d5db] overflow-x-auto whitespace-pre">
                          {f.evidence}
                        </div>
                      </div>
                      
                      <div className="mb-4">
                        <h4 className="text-xs font-medium text-white mb-1.5">Technical Details</h4>
-                       <p className="text-[#8eaccb] text-xs leading-relaxed">{f.technicalExplanation}</p>
+                       <p className="text-[var(--color-text-secondary)] text-xs leading-relaxed">{f.technicalExplanation}</p>
                      </div>
                      
                      {/* Fix Flow */}
-                     <div className="mt-4 pt-4 border-t border-[#1b2938]">
+                     <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
                         {!fixState ? (
                           <button 
                             onClick={handleGenerateFix}
-                            className="w-full bg-[#101a28] hover:bg-[#1b2938] border border-[#2684ff]/30 text-[#2684ff] py-2 rounded-md font-medium transition-colors flex items-center justify-center gap-2 text-sm cursor-pointer"
+                            className="w-full bg-[#101a28] hover:bg-[var(--color-border)] border border-[var(--color-primary-indigo)]/30 text-[var(--color-primary-indigo)] py-2 rounded-md font-medium transition-colors flex items-center justify-center gap-2 text-sm cursor-pointer"
                           >
                             <Wand2 className="w-4 h-4" /> Generate Suggested Fix
                           </button>
                         ) : fixState === 'GENERATING' ? (
-                          <div className="flex items-center justify-center gap-2 text-[#8eaccb] text-sm py-2">
+                          <div className="flex items-center justify-center gap-2 text-[var(--color-text-secondary)] text-sm py-2">
                             <Activity className="w-4 h-4 animate-spin" /> Analyzing codebase context...
                           </div>
                         ) : (
                           <div className="space-y-3">
                              <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-[#00d3a0] flex items-center gap-1.5">
+                                <span className="text-sm font-medium text-[var(--color-success)] flex items-center gap-1.5">
                                   <CheckCircle className="w-4 h-4" /> Fix Generated
                                 </span>
-                                <button onClick={() => setDiffMode(!diffMode)} className="text-xs text-[#2684ff] hover:text-white transition-colors cursor-pointer">
+                                <button onClick={() => setDiffMode(!diffMode)} className="text-xs text-[var(--color-primary-indigo)] hover:text-white transition-colors cursor-pointer">
                                   {diffMode ? 'Close Diff' : 'View in Diff'}
                                 </button>
                              </div>
                              
-                             <div className="bg-[#060d17] p-3 rounded-md border border-[#1b2938]">
-                               <p className="text-xs text-[#8eaccb] leading-relaxed mb-3">{fixExplanation}</p>
+                             <div className="bg-[var(--color-background)] p-3 rounded-md border border-[var(--color-border)]">
+                               <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed mb-3">{fixExplanation}</p>
                                
                                <div className="flex gap-2">
                                   <button 
                                     onClick={handleRunTests}
                                     disabled={fixState === 'VALIDATING' || fixState === 'VALIDATED'}
-                                    className="flex-1 bg-[#101a28] hover:bg-[#1b2938] border border-[#1b2938] text-white py-1.5 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                                    className="flex-1 bg-[#101a28] hover:bg-[var(--color-border)] border border-[var(--color-border)] text-white py-1.5 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
                                   >
                                     {fixState === 'VALIDATING' ? <Activity className="w-3.5 h-3.5 animate-spin" /> : 
-                                     fixState === 'VALIDATED' ? <Check className="w-3.5 h-3.5 text-[#00d3a0]" /> : 
+                                     fixState === 'VALIDATED' ? <Check className="w-3.5 h-3.5 text-[var(--color-success)]" /> : 
                                      <FlaskConical className="w-3.5 h-3.5" />}
                                     {fixState === 'VALIDATING' ? 'Running...' : fixState === 'VALIDATED' ? 'Passed' : 'Run Tests'}
                                   </button>
                                   <button 
                                     disabled={fixState !== 'VALIDATED'}
-                                    className="flex-1 bg-[#2684ff] hover:bg-[#1f6bd9] text-white py-1.5 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:bg-[#1b2938] cursor-pointer"
+                                    className="flex-1 bg-[var(--color-primary-indigo)] hover:bg-[#1f6bd9] text-white py-1.5 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:bg-[var(--color-border)] cursor-pointer"
                                   >
                                     Apply Fix
                                   </button>

@@ -1,21 +1,16 @@
-import React, { useState } from 'react';
-import { 
-  FileText, 
-  Sparkles, 
-  Plus, 
-  Trash2, 
-  CheckSquare, 
-  Calendar, 
-  Clock, 
-  Users, 
-  Award, 
-  Share2, 
-  FileEdit,
-  ClipboardCheck,
-  Zap,
-  Bookmark
+import {
+Award,
+Bookmark,
+Calendar,
+ClipboardCheck,
+FileText,
+Plus,
+Share2,
+Sparkles,
+Users
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence,motion } from 'motion/react';
+import React,{ useState } from 'react';
 
 interface MeetingNote {
   id: string;
@@ -32,11 +27,11 @@ interface MeetingNote {
 const INITIAL_NOTES: MeetingNote[] = [
   {
     id: 'MTG-041',
-    title: 'WyrmSentry v2.0 Scope Alignment',
+    title: 'OminiCode v2.0 Scope Alignment',
     date: '2026-07-16',
     attendees: ['Alex Mercer', 'Sarah Connor', 'You', 'Marcus Vance'],
     rawNotes: 'Discussing the database schema design. Sarah is concerned about open port vulnerability vectors. Marcus requests to ensure the UI supports high-density charts for DevOps monitoring. We decided to use standard PostgreSQL in the cloud and bind ports strictly to container interfaces.',
-    summary: 'The engineering team aligned on the architectural roadmap for the WyrmSentry v2.0 platform. Identified security hardening vectors and integrated DevOps log terminals to secure backend configurations.',
+    summary: 'The engineering team aligned on the architectural roadmap for the OminiCode v2.0 platform. Identified security hardening vectors and integrated DevOps log terminals to secure backend configurations.',
     actionItems: [
       { text: 'Bind cloud PostgreSQL instance to container interfaces strictly', done: true },
       { text: 'Implement high-density Chart widgets in DevOps workspace', done: false }

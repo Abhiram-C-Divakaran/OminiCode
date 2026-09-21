@@ -1,20 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  MessageSquare, 
-  Send, 
-  Users, 
-  GitBranch, 
-  Bell, 
-  Code, 
-  ShieldAlert, 
-  Activity, 
-  Hash, 
-  Plus, 
-  Search,
-  CheckCircle,
-  HelpCircle
+import {
+Hash,
+Send,
+Users
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import React,{ useEffect,useRef,useState } from 'react';
 
 interface ChatMsg {
   id: string;

@@ -1,22 +1,14 @@
-import React, { useState } from 'react';
-import { 
-  AlertCircle, 
-  Plus, 
-  Filter, 
-  Search, 
-  User, 
-  Tag, 
-  Clock, 
-  Sparkles, 
-  CheckCircle2, 
-  Bookmark, 
-  FileText,
-  CheckCircle,
-  AlertTriangle,
-  X,
-  MessageSquare
+import {
+AlertCircle,
+AlertTriangle,
+Bookmark,
+Plus,
+Search,
+Sparkles,
+X
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence,motion } from 'motion/react';
+import React,{ useState } from 'react';
 
 interface Issue {
   id: string;
@@ -32,7 +24,7 @@ interface Issue {
 
 const INITIAL_ISSUES: Issue[] = [
   {
-    id: 'WYRM-102',
+    id: 'OMNI-102',
     title: 'Sanitize URL redirects in Auth Provider',
     desc: 'Vulnerability scanner flagged possible open-redirect exploits inside oauth routing handlers.',
     status: 'Todo',
@@ -43,7 +35,7 @@ const INITIAL_ISSUES: Issue[] = [
     dueDate: '2026-07-22'
   },
   {
-    id: 'WYRM-105',
+    id: 'OMNI-105',
     title: 'SQL Connection Pool timeout under extreme load',
     desc: 'Database connections are exhausted when handling more than 2,000 requests/sec. Need connection recycling.',
     status: 'In Progress',
@@ -54,7 +46,7 @@ const INITIAL_ISSUES: Issue[] = [
     dueDate: '2026-07-20'
   },
   {
-    id: 'WYRM-112',
+    id: 'OMNI-112',
     title: 'Implement drag-and-drop workspace layout presets',
     desc: 'Users want to drag panels around the workspace to save custom grids. Add grid layout helper.',
     status: 'Backlog',
@@ -65,7 +57,7 @@ const INITIAL_ISSUES: Issue[] = [
     dueDate: '2026-08-05'
   },
   {
-    id: 'WYRM-109',
+    id: 'OMNI-109',
     title: 'Optimize memory footprint of Monaco language parser',
     desc: 'TS compilation workers on the client thread leak small buffers. Needs garbage disposal optimization.',
     status: 'QA/Review',
@@ -100,7 +92,7 @@ export default function IssuesPage({ onNavigate }: { onNavigate: (view: string) 
     if (!newTitle) return;
 
     const newIssue: Issue = {
-      id: `WYRM-${100 + issues.length + 1}`,
+      id: `OMNI-${100 + issues.length + 1}`,
       title: newTitle,
       desc: newDesc || 'No details provided.',
       status: 'Todo',
@@ -386,7 +378,7 @@ TECHNICAL INSIGHT:
                       }`}
                     >
                       <Sparkles className={`w-3 h-3 ${isGeneratingAI ? 'animate-spin' : ''}`} />
-                      <span>{isGeneratingAI ? 'Dragon Drafting...' : 'AI Generate Spec'}</span>
+                      <span>{isGeneratingAI ? 'OminiCode drafting...' : 'AI Generate Spec'}</span>
                     </button>
                   </div>
                   <textarea 

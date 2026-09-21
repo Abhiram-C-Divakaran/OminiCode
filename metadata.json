@@ -1,6 +1,5 @@
 {
-  "name": "WyrmSentry",
-  "description": "The guardian dragon of your codebase. An advanced full-stack IDE with dragon-eyed smart code review, security audits, AI assistants, and real-time scanning.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "name": "OminiCode",
+  "description": "An AI-assisted code review and application-security platform under active development.",
+  "requestFramePermissions": []
 }

@@ -1,12 +1,13 @@
+// Placeholder capability slots; concrete deterministic engine interfaces belong to Phase 6.
 
 export interface LanguageAdapter {
     id: string;
     name: string;
     extensions: string[];
-    parser: any; // AST parser interface
-    staticAnalyzers: any[];
-    formatter: any;
-    dependencyResolver: any;
-    frameworkDetectors: any[];
-    securityRules: any[];
+    parser: unknown; // AST parser interface
+    staticAnalyzers: unknown[];
+    formatter: unknown;
+    dependencyResolver: unknown;
+    frameworkDetectors: unknown[];
+    securityRules: unknown[];
 }

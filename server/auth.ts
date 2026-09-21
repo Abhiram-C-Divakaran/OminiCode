@@ -1,26 +1,17 @@
-import { Request, Response, NextFunction } from 'express';
+// Temporary development bypass. This middleware performs no authentication or rate limiting.
+import type { NextFunction,Request,Response } from 'express';
 
 export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-  };
+  user?: { id: string; email: string };
 }
-
-export async function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  req.user = {
-    id: 'mock-user-id',
-    email: 'hacker@wyrmsentry.ai',
-  };
+export async function requireAuth(req: AuthenticatedRequest, _res: Response, next: NextFunction) {
+  req.user = { id: 'mock-user-id', email: 'developer@ominicode.example' };
   next();
 }
-
-class RateLimiter {
-  constructor(private maxRequests: number, private windowMs: number, private message: string) {}
-  public middleware() {
-    return (req: Request, res: Response, next: NextFunction) => next();
+class MockRateLimiter {
+  middleware() {
+    return (_req: Request, _res: Response, next: NextFunction) => next();
   }
 }
-
-export const authRateLimiter = new RateLimiter(10, 15 * 60 * 1000, '');
-export const aiRateLimiter = new RateLimiter(20, 60 * 1000, '');
+export const authRateLimiter = new MockRateLimiter();
+export const aiRateLimiter = new MockRateLimiter();

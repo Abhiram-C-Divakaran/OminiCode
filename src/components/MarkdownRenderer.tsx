@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { Check,Copy,Terminal } from 'lucide-react';
 import React from 'react';
-import { Terminal, Copy, Check } from 'lucide-react';
 
 interface MarkdownRendererProps {
   content: string;

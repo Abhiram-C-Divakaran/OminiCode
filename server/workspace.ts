@@ -1,5 +1,5 @@
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
 
 /**
  * Gets or creates the workspace root folder for a specific user
@@ -13,14 +13,14 @@ export function getUserWorkspace(userId: string): string {
     const readmePath = path.join(wsDir, 'README.md');
     fs.writeFileSync(
       readmePath, 
-      `# WyrmSentry IDE Workspace\nWelcome to your private sandboxed secure environment!\n\nThis workspace is scoped strictly to your account. Feel free to create and edit files here.\n`,
+      `# OminiCode IDE Workspace\nWelcome to your local development workspace.\n\nAuthentication is mocked in this development build; this is not a secure sandbox. Feel free to create and edit files here.\n`,
       'utf-8'
     );
     
     const indexJsPath = path.join(wsDir, 'index.js');
     fs.writeFileSync(
       indexJsPath,
-      `// Simple JavaScript demonstration\nfunction greet(name) {\n  return \`Greetings, \${name}! Welcome to WyrmSentry.\`;\n}\n\nconsole.log(greet('Developer'));\n`,
+      `// Simple JavaScript demonstration\nfunction greet(name) {\n  return \`Greetings, \${name}! Welcome to OminiCode.\`;\n}\n\nconsole.log(greet('Developer'));\n`,
       'utf-8'
     );
   }

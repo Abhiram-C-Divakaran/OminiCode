@@ -1,20 +1,16 @@
-import React, { useState } from 'react';
-import { 
-  Sliders, 
-  Terminal, 
-  Search, 
-  Copy, 
-  Check, 
-  RefreshCw, 
-  Zap, 
-  FileJson, 
-  ShieldAlert, 
-  Calendar, 
-  Paintbrush, 
-  Clock,
-  Code
+import {
+Calendar,
+Clock,
+Copy,
+FileJson,
+Paintbrush,
+Search,
+ShieldAlert,
+Terminal,
+Zap
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence,motion } from 'motion/react';
+import { useState } from 'react';
 
 export default function UtilitiesPage() {
   const [activeTab, setActiveTab] = useState<'regex' | 'json' | 'base64' | 'uuid' | 'timestamp' | 'cron' | 'color'>('regex');
@@ -29,8 +25,8 @@ export default function UtilitiesPage() {
   // 1. Regex state
   const [regexPattern, setRegexPattern] = useState('(\\w+)-(\\d+)');
   const [regexFlags, setRegexFlags] = useState('g');
-  const [regexText, setRegexText] = useState('Bug TSK-201 and issue security WYRM-102 have high priorities.');
-  const [regexResult, setRegexResult] = useState<string[]>(['TSK-201', 'WYRM-102']);
+  const [regexText, setRegexText] = useState('Bug TSK-201 and issue security OMNI-102 have high priorities.');
+  const [regexResult, setRegexResult] = useState<string[]>(['TSK-201', 'OMNI-102']);
 
   const handleTestRegex = () => {
     try {
@@ -43,7 +39,7 @@ export default function UtilitiesPage() {
   };
 
   // 2. JSON/YAML state
-  const [jsonInput, setJsonInput] = useState('{"id":"WYRM-101","status":"Todo","critical":true}');
+  const [jsonInput, setJsonInput] = useState('{"id":"OMNI-101","status":"Todo","critical":true}');
   const [jsonOutput, setJsonOutput] = useState('');
   const [jsonError, setJsonError] = useState('');
 
@@ -58,7 +54,7 @@ export default function UtilitiesPage() {
   };
 
   // 3. Base64 / Hash state
-  const [base64Input, setBase64Input] = useState('WyrmSentry secure terminal payload');
+  const [base64Input, setBase64Input] = useState('OminiCode secure terminal payload');
   const [base64Output, setBase64Output] = useState('V3lybVNlbnRyeSBzZWN1cmUgdGVybWluYWwgcGF5bG9hZA==');
   const [hashType, setHashType] = useState('SHA-256');
   const [hashOutput, setHashOutput] = useState('8f5539fa99df6c21e7d8bb2a3b04c8efb4be36cf631cfcd8ef72be9c185fa0a1');
@@ -82,7 +78,7 @@ export default function UtilitiesPage() {
   const handleGenerateHash = () => {
     // Simulated hash generation algorithm representation
     let hash = '';
-    const val = base64Input || 'wyrm';
+    const val = base64Input || 'ominicode';
     if (hashType === 'MD5') {
       hash = '7c23bc89f61b0c95d9a0d83cf93cd42a';
     } else if (hashType === 'SHA-1') {

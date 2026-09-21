@@ -3,35 +3,38 @@ import 'dotenv/config';
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-import { GoogleGenAI } from "@google/genai";
-import admin from "firebase-admin";
+import { serverConfig } from "./server/config";
+import { getGroqClient } from "./server/services/ai";
+import { getAdminDatabase } from "./server/services/firebaseAdmin";
+import { PRODUCT } from "./src/config/product";
 
 import express from 'express';
-import path from 'path';
 import fs from 'fs';
-import Groq from 'groq-sdk';
+import path from 'path';
 import { createServer as createViteServer } from 'vite';
 
-import db from './server/database';
-import { 
-  requireAuth, 
-  authRateLimiter, 
-  aiRateLimiter, 
-  AuthenticatedRequest 
+import {
+aiRateLimiter,
+AuthenticatedRequest,
+requireAuth
 } from './server/auth';
-import { 
-  resolveAndValidatePath, 
-  getUserFilesRecursively 
+import db from './server/database';
+import {
+getUserFilesRecursively,
+resolveAndValidatePath
 } from './server/workspace';
 
 const app = express();
+// Parse JSON before every API route, including the GitHub proxy.
+app.use(express.json({ limit: '15mb' }));
 
 const getRedirectUri = (req: express.Request) => {
+  if (serverConfig.appUrl) return serverConfig.appUrl.replace(/\/$/, '');
   const host = req.get('host');
   const protocol = req.headers['x-forwarded-proto'] || req.protocol;
   return `${protocol}://${host}`;
 };
-const PORT = 3000;
+const PORT = serverConfig.port;
 
 // --- GITHUB OAUTH ROUTES ---
 app.get('/api/auth/github/url', (req, res) => {
@@ -135,7 +138,7 @@ app.post('/api/github/commit', async (req, res) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        message: message || `Update ${filePath} via WyrmSentry AI`,
+        message: message || `Update ${filePath} via OminiCode AI`,
         content: Buffer.from(content).toString('base64'),
         sha: sha || undefined,
         branch
@@ -152,38 +155,12 @@ app.post('/api/github/commit', async (req, res) => {
 // Enable trust proxy so Express correctly detects original protocol/host/IP behind nginx
 app.set('trust proxy', true);
 
-// Helper to construct exact redirect URI matching what client requests
-const getOAuthRedirectUri = (req: express.Request, provider: 'google' | 'github'): string => {
-  if (process.env.APP_URL) {
-    return `${process.env.APP_URL.replace(/\/$/, '')}/api/auth/${provider}/callback`;
-  }
-  
-  const protoHeader = req.headers['x-forwarded-proto'];
-  const proto = Array.isArray(protoHeader) 
-    ? protoHeader[0] 
-    : typeof protoHeader === 'string' 
-      ? protoHeader.split(',')[0].trim() 
-      : req.protocol || 'http';
+// Default AI model; configurable through the server environment.
+const GROQ_MODEL = serverConfig.groqModel;
 
-  const hostHeader = req.headers['x-forwarded-host'];
-  const host = Array.isArray(hostHeader)
-    ? hostHeader[0]
-    : typeof hostHeader === 'string'
-      ? hostHeader.split(',')[0].trim()
-      : req.get('host') || 'localhost:3000';
 
-  return `${proto}://${host}/api/auth/${provider}/callback`;
-};
 
-// Configurable model name
-const GROQ_MODEL = 'openai/gpt-oss-120b';
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY
-});
-
-// Configure middleware
-app.use(express.json({ limit: '15mb' }));
 
 // ==========================================
 // 2. SCOPED FILE SYSTEM WORKSPACE API
@@ -304,7 +281,7 @@ app.post('/api/files/delete', requireAuth, (req: AuthenticatedRequest, res) => {
 
 
 // ==========================================
-// 3. SECURE SANDBOXED CODE EXECUTION
+// 3. CODE EXECUTION PLACEHOLDER
 // ==========================================
 app.post('/api/run', requireAuth, (req: AuthenticatedRequest, res) => {
   // To avoid critical security issues (Remote Code Execution), we completely disable arbitrary host execution.
@@ -312,13 +289,13 @@ app.post('/api/run', requireAuth, (req: AuthenticatedRequest, res) => {
   res.json({
     success: false,
     exitCode: 1,
-    output: 'Backend arbitrary shell execution is disabled for maximum workspace security. JavaScript files are safely evaluated on the client inside a sandboxed browser environment!'
+    output: 'Backend code execution is disabled. This endpoint does not execute the submitted code.'
   });
 });
 
 
 // ==========================================
-// 4. PERSISTENCE LAYER (User-Scoped SQLite State Sync)
+// 4. LOCAL JSON PERSISTENCE (temporary Firestore-shaped adapter)
 // ==========================================
 
 // Chat Sync
@@ -415,10 +392,10 @@ app.post('/api/sync/extensions', requireAuth, async (req: AuthenticatedRequest, 
     });
 
     const defaultMeta: Record<string, { name: string; desc: string; icon: string; author: string; type: string }> = {
-      'theme-dracula': { name: 'Dracula Obsidian', desc: 'Vampiric cybernetic theme', icon: 'Zap', author: 'WyrmSentry', type: 'theme' },
-      'copilot-refactor': { name: 'DragonRefactor', desc: 'Auto-scrapes code for anomalies', icon: 'Award', author: 'WyrmSentry', type: 'utility' },
+      'theme-dracula': { name: 'Dracula Obsidian', desc: 'Vampiric cybernetic theme', icon: 'Zap', author: 'OminiCode', type: 'theme' },
+      'copilot-refactor': { name: 'OminiCode Refactor', desc: 'Auto-scrapes code for anomalies', icon: 'Award', author: 'OminiCode', type: 'utility' },
       'security-audit': { name: 'SentryGuard Scanner', desc: 'Static analysis check on file open', icon: 'ShieldCheck', author: 'Sentry Labs', type: 'linter' },
-      'prettier-dragon': { name: 'Beautify Wyrm', desc: 'Strict indentation rules compiler', icon: 'Check', author: 'WyrmSentry', type: 'utility' }
+      'ominicode-formatter': { name: 'OminiCode Formatter', desc: 'Strict indentation rules compiler', icon: 'Check', author: 'OminiCode', type: 'utility' }
     };
 
     for (const extId of installedIds) {
@@ -653,7 +630,7 @@ app.post('/api/analytics/activity', requireAuth, async (req: AuthenticatedReques
 
 
 // ==========================================
-// 5. AI ENDPOINTS (Gemini API with Rate Limiting)
+// 5. AI ENDPOINTS (Groq; rate-limit middleware is a development no-op)
 // ==========================================
 
 // Smart Code Reviewer
@@ -709,7 +686,7 @@ ${code}
 
   try {
     const startTime = Date.now();
-    const response = await groq.chat.completions.create({
+    const response = await getGroqClient().chat.completions.create({
       model: GROQ_MODEL,
       messages: [
         {
@@ -755,7 +732,7 @@ app.post('/api/ai/chat', requireAuth, aiRateLimiter.middleware(), async (req: Au
   }
 
   const systemInstruction = `
-You are WyrmSentry, a premier dragon-eyed coding assistant designed to operate inside a high-end web IDE.
+You are OminiCode, a AI-assisted code review assistant in a local development workspace.
 Your design is extremely responsive, tech-forward, friendly, and practical.
 You help users write, explain, review, and debug their code.
 
@@ -777,7 +754,7 @@ ${activeFile ? `File Path: "${activeFile.path}"\nLanguage: "${activeFile.path.sp
       }))
     ];
 
-    const response = await groq.chat.completions.create({
+    const response = await getGroqClient().chat.completions.create({
       model: GROQ_MODEL,
       messages: chatMessages,
       temperature: 0.5
@@ -893,7 +870,7 @@ app.get('/api/users/me/activity-log', requireAuth, async (req: AuthenticatedRequ
 
 
 // ==========================================
-// WYRMSENTRY ENTERPRISE ORCHESTRATION API
+// OMINICODE DEMONSTRATION ORCHESTRATION API
 // ==========================================
 
 // In a real implementation, this would import from the orchestrator and language adapters.
@@ -905,11 +882,9 @@ import { scanOrchestrator } from './server/orchestrator/ScanOrchestrator.js';
 
 
 app.get('/api/repositories', requireAuth, async (req, res) => {
-  // Let's proxy to github if token is present, otherwise return local or mock
-  // But wait, the instruction says "Backend uses connected Git provider"
-  // For the sake of demonstration, we'll try to fetch from GH if possible
+  // Temporary repository fixtures; live GitHub proxy routes are separate.
   res.json({ repositories: [
-    { id: 'wyrmsentry-core', name: 'WyrmSentry-Core', defaultBranch: 'main' },
+    { ...PRODUCT.defaultRepository, defaultBranch: 'main' },
     { id: 'payment-gateway', name: 'Payment-Gateway', defaultBranch: 'master' }
   ]});
 });
@@ -919,7 +894,7 @@ app.get('/api/repositories/:id/branches', requireAuth, async (req, res) => {
 });
 
 app.get('/api/repositories/:id/tree', requireAuth, async (req, res) => {
-  const path = req.query.path || '';
+  const path = typeof req.query.path === 'string' ? req.query.path : '';
   if (path === '') {
     res.json({ items: [
       { name: 'src', type: 'folder', path: 'src' },
@@ -938,11 +913,11 @@ app.get('/api/repositories/:id/tree', requireAuth, async (req, res) => {
 });
 
 app.get('/api/repositories/:id/file', requireAuth, async (req, res) => {
-  const path = req.query.path || '';
+  const path = typeof req.query.path === 'string' ? req.query.path : '';
   if (path.includes('auth.ts')) {
     res.json({ content: 'export function login(user, pass) {\n  // TODO: hash password\n  const query = \'SELECT * FROM users WHERE username = \' + user + \' AND password = \' + pass;\n  db.execute(query);\n}' });
   } else if (path.includes('index.ts')) {
-    res.json({ content: 'console.log(\'Hello WyrmSentry\');\n' });
+    res.json({ content: 'console.log(\'Hello OminiCode\');\n' });
   } else {
     res.json({ content: '// File contents for ' + path + '\n' });
   }
@@ -952,11 +927,10 @@ app.post('/api/scans', requireAuth, async (req, res) => {
   const { repositoryId, branch, commitSha, filePath, scanMode, languageMode } = req.body;
   const scanId = 'SCAN-' + Math.floor(Math.random() * 10000);
   
-  // Actually queue a scan in Firebase!
+  // Temporary demonstration scan: records state in Firestore; no deterministic analysis.
   try {
     
-    if (!admin.apps.length) admin.initializeApp();
-    const adminDb = admin.firestore();
+    const adminDb = getAdminDatabase();
     
     await adminDb.collection('organizations').doc('default').collection('scans').doc(scanId).set({
       id: scanId,
@@ -975,10 +949,10 @@ app.post('/api/scans', requireAuth, async (req, res) => {
       await adminDb.collection('organizations').doc('default').collection('scans').doc(scanId).update({
         status: 'ANALYZING',
         progress: 10,
-        currentStage: 'Running WyrmSentry AI...'
+        currentStage: 'Running OminiCode AI...'
       });
       
-      // Let's use Gemini AI to find bugs if a file was provided, or simulate
+      // Temporary mock: emit a sample finding based solely on the file name.
       let foundBug = false;
       if (filePath && filePath.includes('auth.ts')) {
         foundBug = true;
@@ -1006,7 +980,7 @@ app.post('/api/scans', requireAuth, async (req, res) => {
             technicalExplanation: 'The user and pass variables are concatenated...',
             evidence: 'const query = \'SELECT * FROM users WHERE username = \' + user + \' AND password = \' + pass;',
             remediation: 'Use parameterized queries instead of string concatenation.',
-            sourceEngine: 'WyrmSentry AI',
+            sourceEngine: 'OminiCode AI',
             status: 'OPEN',
             firstDetected: Date.now()
           });
@@ -1035,8 +1009,7 @@ app.post('/api/findings/:id/generate-fix', requireAuth, async (req, res) => {
   
   try {
     
-    if (!admin.apps.length) admin.initializeApp();
-    const adminDb = admin.firestore();
+    const adminDb = getAdminDatabase();
     
     await adminDb.collection('organizations').doc('default').collection('fixes').doc(fixId).set({
       id: fixId,
@@ -1063,8 +1036,7 @@ app.post('/api/findings/:id/generate-fix', requireAuth, async (req, res) => {
 app.post('/api/fixes/:fixId/tests', requireAuth, async (req, res) => {
   const fixId = req.params.fixId;
   
-  if (!admin.apps.length) admin.initializeApp();
-  const adminDb = admin.firestore();
+  const adminDb = getAdminDatabase();
   
   await adminDb.collection('organizations').doc('default').collection('fixes').doc(fixId).update({
     status: 'VALIDATING'
@@ -1134,7 +1106,7 @@ app.get('/api/scans/:jobId/findings', requireAuth, async (req, res) => {
                 evidence: 'amount = "0; DROP TABLE users; --"',
                 remediation: 'Use parameterized queries (prepared statements) to separate SQL code from user input.',
                 suggestedPatch: 'const query = "UPDATE balance SET amount = amount - ? WHERE user_id = ?";\ndb.execute(query, [amount, user.id]);',
-                sourceEngine: 'WyrmSentry Data Flow Engine',
+                sourceEngine: 'OminiCode Data Flow Engine',
                 status: 'Open',
                 fingerprint: 'fp_sql_inj_1'
             }
@@ -1160,21 +1132,17 @@ app.post('/api/devops/pipelines/trigger', requireAuth, async (req: Authenticated
 
   const runId = 'CI-' + Math.floor(1000 + Math.random() * 9000);
   
-  // Here we use the actual Firebase admin SDK to write to Firestore since it's real-time.
-  // We need to require it dynamically or if already initialized.
+  // Temporary simulation persisted to Firestore, not a real provider pipeline.
   try {
     
-    if (!admin.apps.length) {
-       admin.initializeApp();
-    }
-    const adminDb = admin.firestore();
+    const adminDb = getAdminDatabase();
     
     await adminDb.collection('organizations').doc('default').collection('pipeline_runs').doc(runId).set({
         provider: 'GitHub Actions',
         repositoryId,
         branch,
         commitSha: Math.random().toString(16).substring(2, 9),
-        commitMessage: 'Triggered from WyrmSentry (Manual)',
+        commitMessage: 'Triggered from OminiCode (Manual)',
         status: 'RUNNING',
         startedAt: Date.now(),
         completedAt: 0,

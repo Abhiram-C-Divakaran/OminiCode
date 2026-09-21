@@ -1,21 +1,12 @@
-import React, { useState } from 'react';
-import { 
-  Trello, 
-  Calendar, 
-  Sparkles, 
-  Users, 
-  User, 
-  CheckSquare, 
-  Clock, 
-  ChevronLeft, 
-  ChevronRight, 
-  RefreshCw, 
-  Tag, 
-  AlertCircle,
-  TrendingUp,
-  Zap
+import {
+ChevronLeft,
+ChevronRight,
+Sparkles,
+Trello,
+Zap
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence,motion } from 'motion/react';
+import { useState } from 'react';
 
 interface Task {
   id: string;

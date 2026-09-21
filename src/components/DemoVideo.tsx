@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Shield, GitPullRequest, Code, Search, Bug, Play, Sparkles, CheckCircle, Cpu, ShieldAlert, FileCode } from 'lucide-react';
+import { CheckCircle,FileCode,ShieldAlert,Sparkles } from 'lucide-react';
+import { AnimatePresence,motion } from 'motion/react';
+import { useEffect,useState } from 'react';
 
 export default function DemoVideo() {
   const [activeStep, setActiveStep] = useState(0);
@@ -23,7 +23,7 @@ export default function DemoVideo() {
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
         </div>
         <div className="mx-auto text-[10px] font-mono text-slate-500 font-medium tracking-wider uppercase">
-          WyrmSentry Code Analysis
+          OminiCode Code Analysis
         </div>
       </div>
 

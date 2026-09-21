@@ -1,4 +1,4 @@
-import { ScanMode, Finding } from '../types/scan';
+import { ScanMode } from '../types/scan';
 
 export const scanService = {
   startScan: async (repoId: string, branch: string, commitSha: string, filePath: string, scanMode: ScanMode, language: string) => {
@@ -58,7 +58,7 @@ export const scanService = {
       evidence: 'amount = "0; DROP TABLE users; --"',
       remediation: 'Use parameterized queries (prepared statements) to separate SQL code from user input.',
       suggestedPatch: 'const query = "UPDATE balance SET amount = amount - ? WHERE user_id = ?";\ndb.execute(query, [amount, user.id]);',
-      sourceEngine: 'WyrmSentry Data Flow Engine',
+      sourceEngine: 'OminiCode Data Flow Engine',
       status: 'Open',
       fingerprint: 'fp_sql_inj_1'
     }];

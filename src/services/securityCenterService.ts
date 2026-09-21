@@ -1,5 +1,5 @@
+import { collection,doc,limit,onSnapshot,orderBy,query } from 'firebase/firestore';
 import { db } from '../firebase';
-import { collection, doc, getDoc, getDocs, onSnapshot, query, where, orderBy, limit } from 'firebase/firestore';
 
 export interface SecurityScoreMetrics {
   securityScore: number;

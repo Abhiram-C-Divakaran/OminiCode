@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from './AuthContext';
+import React,{ createContext,useContext,useEffect,useState } from 'react';
 import { ReviewResult } from '../types';
+import { useAuth } from './AuthContext';
 
 interface ReviewContextType {
   reviews: Record<string, ReviewResult>;
@@ -9,7 +9,7 @@ interface ReviewContextType {
   requestReview: (filePath: string, code: string, language: string, rules: string[]) => Promise<ReviewResult | void>;
   clearReview: (filePath: string) => Promise<void>;
   
-  // New Enterprise Scan Flow
+  // New Demonstration Scan Flow
   currentJobId: string | null;
   scanStatus: string | null;
   scanProgress: number;
@@ -23,7 +23,7 @@ export function ReviewProvider({ children }: { children: React.ReactNode }) {
   const [reviews, setReviews] = useState<Record<string, ReviewResult>>({});
   const [isReviewing, setIsReviewing] = useState(false);
   
-  // Enterprise State
+  // Demonstration State
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [scanStatus, setScanStatus] = useState<string | null>(null);
   const [scanProgress, setScanProgress] = useState(0);
@@ -43,10 +43,6 @@ export function ReviewProvider({ children }: { children: React.ReactNode }) {
 
   const loadReviews = async () => {
     // pending actual history sync
-  };
-
-  const syncReviews = async (newReviews: Record<string, ReviewResult>) => {
-    // pending
   };
 
   const requestReview = async (filePath: string, code: string, language: string, rules: string[]): Promise<ReviewResult | void> => {
@@ -84,7 +80,7 @@ export function ReviewProvider({ children }: { children: React.ReactNode }) {
         await new Promise(r => setTimeout(r, 1000));
         
         const findingsRes = await fetch(`/api/scans/${data.job.id}/findings`, { headers: getHeaders() });
-        const findingsData = await findingsRes.json();
+        await findingsRes.json();
         
         setScanStatus('COMPLETED');
         setScanProgress(100);

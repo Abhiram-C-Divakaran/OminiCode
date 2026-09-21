@@ -1,8 +1,9 @@
+// Temporary mock identity and no-op auth actions. Real sessions begin in Phase 2.
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React,{ createContext,useContext,useState } from 'react';
 
 export interface UserProfile {
   id: string;
@@ -28,15 +29,15 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>({
+  const [user] = useState<UserProfile | null>({
     id: 'mock-user-id',
-    email: 'hacker@wyrmsentry.ai',
+    email: 'developer@ominicode.example',
     name: 'Admin User',
     username: 'admin'
   });
-  const [token, setToken] = useState<string | null>('mock-token');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const [token] = useState<string | null>('mock-token');
+  const isLoading = false;
+  const isAuthLoading = false;
   
   const noop = async () => {};
 

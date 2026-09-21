@@ -1,17 +1,13 @@
-import React, { useState } from 'react';
-import { 
-  FileCode, 
-  Search, 
-  Plus, 
-  Copy, 
-  Check, 
-  Trash2, 
-  Tag, 
-  Share2, 
-  Code,
-  Sparkles
+import {
+Check,
+Code,
+Copy,
+FileCode,
+Plus,
+Search
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence,motion } from 'motion/react';
+import React,{ useState } from 'react';
 
 interface Snippet {
   id: string;
@@ -56,7 +52,7 @@ export async function fetchUserSecure(userId: string) {
     // Allow local development and specific production subdomains strictly
     const allowedPatterns = [
       /^localhost(:\\d+)?$/,
-      /^([a-z0-9-]+\\.)?wyrmsentry\\.ai$/
+      /^([a-z0-9-]+\\.)?ominicode\\.ai$/
     ];
     
     return allowedPatterns.some(regex => regex.test(parsed.hostname));

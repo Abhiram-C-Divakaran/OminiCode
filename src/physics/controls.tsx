@@ -3,25 +3,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
-import { 
-  Sliders, 
-  Play, 
-  RotateCcw, 
-  Wind, 
-  Flame, 
-  Anchor, 
-  Zap, 
-  Sparkles, 
-  VolumeX, 
-  Volume2,
-  Gauge,
-  Cpu,
-  Infinity as InfIcon,
-  Moon,
-  Sun,
-  Globe
+import {
+Anchor,
+Cpu,
+Flame,
+Gauge,
+Globe,
+Infinity as InfIcon,
+Moon,
+Play,
+RotateCcw,
+Sliders,
+Sparkles,
+Wind,
+Zap
 } from 'lucide-react';
+import { useState } from 'react';
 import { PhysicsConfig } from './engine';
 
 interface PhysicsControlsProps {

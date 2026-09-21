@@ -1,0 +1,21 @@
+/* Semantic design tokens. Keep brand colors here; pages consume these variables. */
+:root {
+  --color-background: #070A14;
+  --color-panel: #0B1020;
+  --color-panel-elevated: #10162A;
+  --color-border: rgba(130, 140, 190, 0.15);
+  --color-primary: #7C3AED;
+  --color-primary-indigo: #4F46E5;
+  --color-accent: #3B82F6;
+  --color-primary-light: #A78BFA;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-text: #F8FAFC;
+  --color-text-secondary: #94A3B8;
+  --color-text-muted: #64748B;
+  --brand-gradient: linear-gradient(110deg, var(--color-primary), var(--color-primary-indigo), var(--color-accent));
+}
+.ominicode-logo { display: inline-flex; align-items: center; gap: .5em; color: var(--color-text); font-size: 1.25rem; font-weight: 700; letter-spacing: -.04em; white-space: nowrap; line-height: 1; }
+.ominicode-logo__mark { flex-shrink: 0; }
+.ominicode-logo__code { background: var(--brand-gradient); background-clip: text; -webkit-background-clip: text; color: transparent; }

@@ -1,5 +1,5 @@
+import { collection,doc,limit,onSnapshot,orderBy,query,where } from 'firebase/firestore';
 import { db } from '../firebase';
-import { collection, doc, getDocs, onSnapshot, query, where, orderBy, limit, addDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 
 const ORG_ID = 'default';
 

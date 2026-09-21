@@ -1,20 +1,13 @@
-import React, { useState } from 'react';
-import { 
-  Users, 
-  Sparkles, 
-  FileText, 
-  Check, 
-  Copy, 
-  Calendar, 
-  Clock, 
-  HelpCircle,
-  TrendingUp,
-  Award,
-  Zap,
-  CheckCircle,
-  AlertTriangle
+import {
+AlertTriangle,
+Check,
+CheckCircle,
+Copy,
+Sparkles,
+TrendingUp,
+Users
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import React,{ useState } from 'react';
 
 interface StandupLog {
   date: string;
@@ -78,7 +71,7 @@ export default function StandupPage() {
 ⚠️ **Blockers & Impediments:**
 • ${blockers || 'No critical blockers identified. Green pipelines overall.'}
 
-💬 *Synthesized via WyrmSentry Standup Assistant.*`;
+💬 *Synthesized via OminiCode Standup Assistant.*`;
 
       setAiOutput(formatted);
       setIsSynthesising(false);

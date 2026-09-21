@@ -1,5 +1,5 @@
 
-import { ScanJob, ScanStatus } from '../models/ScanJob';
+import { ScanJob } from '../models/ScanJob';
 
 export class ScanOrchestrator {
     private activeJobs: Map<string, ScanJob> = new Map();

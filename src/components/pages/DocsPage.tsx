@@ -3,20 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
-import { 
-  BookOpen, 
-  Search, 
-  Terminal, 
-  Cpu, 
-  Play, 
-  CheckCircle, 
-  FileCode, 
-  Info,
-  ChevronRight,
-  Clipboard,
-  Bot
+import {
+BookOpen,
+ChevronRight,
+Clipboard,
+FileCode,
+Play,
+Search,
+Terminal
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface DocsPageProps {
   onNavigate: (view: string) => void;
@@ -29,26 +25,26 @@ const DOCS_NAV = [
   { id: 'api', label: 'REST API endpoints', category: 'API Reference' }
 ];
 
-const DOC_CONTENT: Record<string, { title: string, content: string, code?: string }> = {
-  start: {
-    title: 'Integrating CodeSight AI Reviewer',
-    content: 'Learn how to connect your public/private repositories into our scanning cluster. Start reviewing security, complexity, and language distributions automatically.',
-    code: '# Install CodeSight CLI\nnpm install -g @codesight/cli\n\n# Securely authenticate session\ncodesight auth:login --token=ghp_827f...\n\n# Audit project files\ncodesight scan .'
+const DOC_CONTENT: Record<string, { title: string; content: string; code?: string }> = {
+  "start": {
+    "title": "Getting started with OminiCode",
+    "content": "OminiCode is under active development. Run the local React and Express app to explore the workspace. Authentication, scanner engines, and provider integrations are temporary or incomplete. There is no published OminiCode CLI.",
+    "code": "npm install\n# Copy .env.example to .env\nnpm run dev\n\n# Validate the foundation\nnpm run typecheck\nnpm run build"
   },
-  ast: {
-    title: 'AST Core Scanning Mechanics',
-    content: 'We parse your target javascript, python, or go files into high-fidelity Abstract Syntax Trees (AST). The trees are traversed by AI models to evaluate variables, unparameterized database queries, and redundant loop patterns.',
-    code: '{\n  "type": "Program",\n  "body": [\n    {\n      "type": "VariableDeclaration",\n      "declarations": [\n        { "id": "user", "init": "sql_input" }\n      ]\n    }\n  ]\n}'
+  "ast": {
+    "title": "Planned deterministic scanner architecture",
+    "content": "The intended pipeline detects languages, runs static analysis, dependency scanning and secret detection, and normalizes findings. AI will explain findings and propose fixes; it will not replace deterministic security engines. Current scan jobs are demonstrations.",
+    "code": "Repository → Language detection → Static analysis\n→ Dependency scanning → Secret detection\n→ Normalize findings → Optional AI assistance"
   },
-  sec: {
-    title: 'Automated Vulnerability Patching',
-    content: 'When critical CVE configurations or secret leaks are discovered during traversal, AI outputs formatted unified patch files. Mark suggestions as resolved to automatically trigger code replacement routines.',
-    code: '<<<<<<< CURRENT_CODE\nstripe.Charge.create(amount, "usd")\n=======\nstripe.Charge.create(\n  amount=amount,\n  currency="usd",\n  timeout=5.0\n)\n>>>>>>> CODESIGHT_PROPOSAL'
+  "sec": {
+    "title": "Reviewing proposed fixes",
+    "content": "AI suggestions and example patches need developer review. Current validation statuses may be simulated; they do not prove a vulnerability is fixed. Real diff validation, test execution, and approval workflows are planned for later phases.",
+    "code": "// Review the finding and proposed change.\n// Run deterministic checks and relevant tests.\n// Do not treat a simulated status as evidence."
   },
-  api: {
-    title: 'SaaS REST API Documentation',
-    content: 'Invoke codesight scanning services directly within external CI/CD hooks. Configure continuous inspection triggers easily using REST endpoints.',
-    code: 'curl -X POST https://api.codesight.ai/v1/scan \\\n  -H "Authorization: Bearer sk_live_..." \\\n  -d \'{"repo": "facebook/react", "branch": "master"}\''
+  "api": {
+    "title": "Local development API",
+    "content": "The API runs on the same origin as the frontend. /api/repositories returns demo repositories. /api/ai/chat and /api/ai/review require a server-side Groq key. This playground shows a static example; it does not invoke a scanner or external service.",
+    "code": "GET /api/repositories\nPOST /api/ai/chat\nPOST /api/ai/review\n\n// Local development only. Authentication is mocked."
   }
 };
 
@@ -58,7 +54,7 @@ export default function DocsPage({ onNavigate }: DocsPageProps) {
   
   // API Playground states
   const [apiMethod, setApiMethod] = useState('POST');
-  const [apiEndpoint, setApiEndpoint] = useState('/v1/scan');
+  const [apiEndpoint, setApiEndpoint] = useState('/api/scans');
   const [apiResponse, setApiResponse] = useState<string | null>(null);
   const [callingApi, setCallingApi] = useState(false);
 
@@ -68,7 +64,7 @@ export default function DocsPage({ onNavigate }: DocsPageProps) {
     setTimeout(() => {
       setCallingApi(false);
       setApiResponse(JSON.stringify({
-        status: "successful_scan",
+        status: "simulated_scan",
         scan_id: "scan_82fa8cf29",
         findings: [
           { level: "Critical", component: "jwt_provider.go", issue: "Hardcoded secret cryptographic signature salt." }
@@ -198,7 +194,7 @@ export default function DocsPage({ onNavigate }: DocsPageProps) {
             <div className="flex flex-col md:flex-row items-center gap-3 bg-black/30 p-2 rounded-lg border border-white/5">
               <div className="flex gap-1.5 bg-black/40 p-1 rounded border border-white/5 font-mono text-[11px]">
                 <span className="text-green-400 font-bold px-1.5">POST</span>
-                <span className="text-slate-500 font-medium">https://api.codesight.ai</span>
+                <span className="text-slate-500 font-medium">Local example</span>
               </div>
               <input
                 type="text"
@@ -212,20 +208,20 @@ export default function DocsPage({ onNavigate }: DocsPageProps) {
                 className="w-full md:w-auto px-5 py-1.5 rounded bg-brand-cyan hover:bg-brand-cyan/85 text-slate-950 font-bold text-xs transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Call API</span>
+                <span>Show example</span>
               </button>
             </div>
 
             {callingApi && (
               <div className="p-12 text-center flex flex-col items-center justify-center space-y-2">
                 <div className="w-6 h-6 rounded-full border-2 border-brand-cyan border-t-transparent animate-spin" />
-                <span className="text-[10px] text-slate-500 font-mono">POST dispatch in execution...</span>
+                <span className="text-[10px] text-slate-500 font-mono">Preparing example...</span>
               </div>
             )}
 
             {apiResponse && (
               <div className="space-y-1 text-left animate-in fade-in zoom-in-95 duration-200">
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block font-mono">Response Payload (200 OK)</span>
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block font-mono">Example payload (simulated)</span>
                 <pre className="p-3 bg-black/50 border border-white/5 rounded-lg font-mono text-[10.5px] text-green-400 overflow-x-auto leading-relaxed">
                   {apiResponse}
                 </pre>

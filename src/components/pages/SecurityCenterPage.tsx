@@ -1,19 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  ShieldCheck, ShieldAlert, AlertTriangle, TrendingUp, Key, Box, Activity, CheckCircle, Search, ExternalLink, Shield 
+import { GoogleAuthProvider,onAuthStateChanged,signInWithPopup,User } from 'firebase/auth';
+import {
+Activity,
+AlertTriangle,
+Box,
+ExternalLink,
+Key,
+Shield,
+ShieldCheck,
+TrendingUp
 } from 'lucide-react';
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-  BarChart, Bar, Cell
+import { useEffect,useState } from 'react';
+import {
+Area,
+AreaChart,
+CartesianGrid,Tooltip as RechartsTooltip,ResponsiveContainer,
+XAxis,YAxis
 } from 'recharts';
-import { db, auth } from '../../firebase';
-import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
-import { 
-  SecurityCenterService, 
-  SecurityScoreMetrics, 
-  RepositoryRisk, 
-  SecurityFinding, 
-  SecurityEvent 
+import { auth } from '../../firebase';
+import {
+RepositoryRisk,
+SecurityCenterService,
+SecurityEvent,
+SecurityFinding,
+SecurityScoreMetrics
 } from '../../services/securityCenterService';
 
 export default function SecurityCenterPage() {
@@ -73,8 +82,8 @@ export default function SecurityCenterPage() {
 
   if (authLoading) {
     return (
-      <div className="flex-1 h-full bg-[#060d17] flex items-center justify-center">
-        <div className="text-[#8eaccb] flex items-center gap-2">
+      <div className="flex-1 h-full bg-[var(--color-background)] flex items-center justify-center">
+        <div className="text-[var(--color-text-secondary)] flex items-center gap-2">
           <Activity className="w-5 h-5 animate-spin" /> Verifying session...
         </div>
       </div>
@@ -83,14 +92,14 @@ export default function SecurityCenterPage() {
 
   if (!firebaseUser) {
     return (
-      <div className="flex-1 h-full bg-[#060d17] flex items-center justify-center p-8">
-        <div className="bg-[#0b1523] border border-[#1b2938] rounded-xl p-8 max-w-md w-full text-center">
-          <Shield className="w-16 h-16 text-[#2684ff] mx-auto mb-4" />
+      <div className="flex-1 h-full bg-[var(--color-background)] flex items-center justify-center p-8">
+        <div className="bg-[var(--color-panel)] border border-[var(--color-border)] rounded-xl p-8 max-w-md w-full text-center">
+          <Shield className="w-16 h-16 text-[var(--color-primary-indigo)] mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-white mb-2">Security Center</h2>
-          <p className="text-[#8eaccb] mb-6">Sign in to view enterprise security metrics and real-time findings.</p>
+          <p className="text-[var(--color-text-secondary)] mb-6">Sign in to view enterprise security metrics and real-time findings.</p>
           <button 
             onClick={handleLogin}
-            className="w-full bg-[#2684ff] hover:bg-[#1f6bd9] text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+            className="w-full bg-[var(--color-primary-indigo)] hover:bg-[#1f6bd9] text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
           >
             Sign in with Google
           </button>
@@ -101,8 +110,8 @@ export default function SecurityCenterPage() {
 
   if (loading && !metrics) {
     return (
-      <div className="flex-1 h-full bg-[#060d17] flex items-center justify-center">
-        <div className="text-[#8eaccb] flex items-center gap-2">
+      <div className="flex-1 h-full bg-[var(--color-background)] flex items-center justify-center">
+        <div className="text-[var(--color-text-secondary)] flex items-center gap-2">
           <Activity className="w-5 h-5 animate-spin" /> Loading Security Center...
         </div>
       </div>
@@ -111,31 +120,31 @@ export default function SecurityCenterPage() {
 
   if (!metrics) {
     return (
-      <div className="flex-1 h-full bg-[#060d17] p-8 overflow-y-auto">
+      <div className="flex-1 h-full bg-[var(--color-background)] p-8 overflow-y-auto">
         <div className="max-w-7xl mx-auto flex flex-col items-center justify-center min-h-[500px] text-center">
-          <ShieldCheck className="w-20 h-20 text-[#627d9c] mb-6" />
+          <ShieldCheck className="w-20 h-20 text-[var(--color-text-muted)] mb-6" />
           <h1 className="text-2xl font-bold text-white mb-2">Security Center</h1>
-          <p className="text-[#8eaccb] text-lg">No security data available yet.</p>
+          <p className="text-[var(--color-text-secondary)] text-lg">No security data available yet.</p>
         </div>
       </div>
     );
   }
 
-  const scoreColor = metrics.securityScore >= 80 ? 'text-[#00d3a0]' : metrics.securityScore >= 60 ? 'text-amber-400' : 'text-red-500';
+  const scoreColor = metrics.securityScore >= 80 ? 'text-[var(--color-success)]' : metrics.securityScore >= 60 ? 'text-amber-400' : 'text-red-500';
 
   return (
-    <div className="flex-1 h-full bg-[#060d17] p-6 lg:p-8 overflow-y-auto custom-scrollbar">
+    <div className="flex-1 h-full bg-[var(--color-background)] p-6 lg:p-8 overflow-y-auto custom-scrollbar">
       <div className="max-w-7xl mx-auto space-y-6">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-white">Security Command Center</h1>
-            <p className="text-[#8eaccb] text-sm mt-1">Enterprise vulnerability and risk overview</p>
+            <p className="text-[var(--color-text-secondary)] text-sm mt-1">Enterprise vulnerability and risk overview</p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5 text-xs font-mono bg-[#00d3a0]/10 text-[#00d3a0] px-2.5 py-1 rounded-full border border-[#00d3a0]/20">
-              <span className="w-1.5 h-1.5 bg-[#00d3a0] rounded-full animate-pulse"></span>
+            <span className="flex items-center gap-1.5 text-xs font-mono bg-[var(--color-success)]/10 text-[var(--color-success)] px-2.5 py-1 rounded-full border border-[var(--color-success)]/20">
+              <span className="w-1.5 h-1.5 bg-[var(--color-success)] rounded-full animate-pulse"></span>
               LIVE
             </span>
           </div>
@@ -144,24 +153,24 @@ export default function SecurityCenterPage() {
         {/* Top KPI Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Security Score Widget */}
-          <div className="bg-[#0b1523] border border-[#1b2938] rounded-xl p-5 relative overflow-hidden group">
-            <div className="absolute -right-6 -top-6 w-24 h-24 bg-[#2684ff]/5 rounded-full blur-2xl group-hover:bg-[#2684ff]/10 transition-colors"></div>
+          <div className="bg-[var(--color-panel)] border border-[var(--color-border)] rounded-xl p-5 relative overflow-hidden group">
+            <div className="absolute -right-6 -top-6 w-24 h-24 bg-[var(--color-primary-indigo)]/5 rounded-full blur-2xl group-hover:bg-[var(--color-primary-indigo)]/10 transition-colors"></div>
             <div className="flex justify-between items-start mb-4 relative">
-              <h3 className="text-sm font-semibold text-[#8eaccb]">Security Score</h3>
+              <h3 className="text-sm font-semibold text-[var(--color-text-secondary)]">Security Score</h3>
               <ShieldCheck className={`w-5 h-5 ${scoreColor}`} />
             </div>
             <div className="flex items-baseline gap-2 relative">
               <span className={`text-4xl font-bold ${scoreColor}`}>{metrics.securityScore}</span>
-              <span className="text-sm text-[#627d9c]">/ 100</span>
+              <span className="text-sm text-[var(--color-text-muted)]">/ 100</span>
             </div>
-            <div className="mt-4 flex items-center gap-1 text-xs text-[#00d3a0]">
+            <div className="mt-4 flex items-center gap-1 text-xs text-[var(--color-success)]">
               <TrendingUp className="w-3 h-3" /> +2 from last week
             </div>
           </div>
 
-          <div className="bg-[#0b1523] border border-[#1b2938] rounded-xl p-5">
+          <div className="bg-[var(--color-panel)] border border-[var(--color-border)] rounded-xl p-5">
             <div className="flex justify-between items-start mb-4">
-              <h3 className="text-sm font-semibold text-[#8eaccb]">Active Vulnerabilities</h3>
+              <h3 className="text-sm font-semibold text-[var(--color-text-secondary)]">Active Vulnerabilities</h3>
               <AlertTriangle className="w-5 h-5 text-red-500" />
             </div>
             <div className="flex items-baseline gap-2">
@@ -173,9 +182,9 @@ export default function SecurityCenterPage() {
             </div>
           </div>
 
-          <div className="bg-[#0b1523] border border-[#1b2938] rounded-xl p-5">
+          <div className="bg-[var(--color-panel)] border border-[var(--color-border)] rounded-xl p-5">
             <div className="flex justify-between items-start mb-4">
-              <h3 className="text-sm font-semibold text-[#8eaccb]">Exposed Secrets</h3>
+              <h3 className="text-sm font-semibold text-[var(--color-text-secondary)]">Exposed Secrets</h3>
               <Key className="w-5 h-5 text-purple-400" />
             </div>
             <div className="flex items-baseline gap-2">
@@ -186,16 +195,16 @@ export default function SecurityCenterPage() {
             </div>
           </div>
 
-          <div className="bg-[#0b1523] border border-[#1b2938] rounded-xl p-5">
+          <div className="bg-[var(--color-panel)] border border-[var(--color-border)] rounded-xl p-5">
             <div className="flex justify-between items-start mb-4">
-              <h3 className="text-sm font-semibold text-[#8eaccb]">Repositories at Risk</h3>
-              <Box className="w-5 h-5 text-[#2684ff]" />
+              <h3 className="text-sm font-semibold text-[var(--color-text-secondary)]">Repositories at Risk</h3>
+              <Box className="w-5 h-5 text-[var(--color-primary-indigo)]" />
             </div>
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-bold text-white">{metrics.repositoriesAtRisk}</span>
-              <span className="text-sm text-[#627d9c]">/ {repos.length}</span>
+              <span className="text-sm text-[var(--color-text-muted)]">/ {repos.length}</span>
             </div>
-            <div className="mt-4 flex items-center gap-1 text-xs text-[#627d9c]">
+            <div className="mt-4 flex items-center gap-1 text-xs text-[var(--color-text-muted)]">
               Across all teams
             </div>
           </div>
@@ -204,7 +213,7 @@ export default function SecurityCenterPage() {
         {/* Charts & Lists Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Finding Trends */}
-          <div className="bg-[#0b1523] border border-[#1b2938] rounded-xl p-5 lg:col-span-2 flex flex-col">
+          <div className="bg-[var(--color-panel)] border border-[var(--color-border)] rounded-xl p-5 lg:col-span-2 flex flex-col">
             <h3 className="text-sm font-semibold text-white mb-6">Finding Trends (Last 5 Days)</h3>
             <div className="flex-1 w-full h-[250px]">
               {trendData.length > 0 ? (
@@ -220,11 +229,11 @@ export default function SecurityCenterPage() {
                         <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1b2938" vertical={false} />
-                    <XAxis dataKey="name" stroke="#627d9c" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#627d9c" fontSize={12} tickLine={false} axisLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                    <XAxis dataKey="name" stroke="var(--color-text-muted)" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke="var(--color-text-muted)" fontSize={12} tickLine={false} axisLine={false} />
                     <RechartsTooltip 
-                      contentStyle={{ backgroundColor: '#070e18', border: '1px solid #1b2938', borderRadius: '8px' }}
+                      contentStyle={{ backgroundColor: 'var(--color-panel)', border: '1px solid var(--color-border)', borderRadius: '8px' }}
                       itemStyle={{ color: '#fff' }}
                     />
                     <Area type="monotone" dataKey="critical" stroke="#ef4444" fillOpacity={1} fill="url(#colorCrit)" strokeWidth={2} />
@@ -232,7 +241,7 @@ export default function SecurityCenterPage() {
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-[#627d9c] text-sm">
+                <div className="w-full h-full flex items-center justify-center text-[var(--color-text-muted)] text-sm">
                   Not enough historical data to display trends.
                 </div>
               )}
@@ -240,14 +249,14 @@ export default function SecurityCenterPage() {
           </div>
 
           {/* Critical Action Queue / Events */}
-          <div className="bg-[#0b1523] border border-[#1b2938] rounded-xl flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-[#1b2938] flex items-center justify-between">
+          <div className="bg-[var(--color-panel)] border border-[var(--color-border)] rounded-xl flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-[var(--color-border)] flex items-center justify-between">
               <h3 className="text-sm font-semibold text-white">Critical Action Queue</h3>
               <span className="bg-red-500/10 text-red-500 text-xs px-2 py-0.5 rounded font-medium">{events.length}</span>
             </div>
             <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
               {events.length === 0 ? (
-                <div className="p-4 text-center text-[#627d9c] text-sm">No critical actions required.</div>
+                <div className="p-4 text-center text-[var(--color-text-muted)] text-sm">No critical actions required.</div>
               ) : (
                 <div className="space-y-1">
                   {events.map(evt => (
@@ -255,8 +264,8 @@ export default function SecurityCenterPage() {
                       <div className="flex items-start gap-3">
                         <div className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${evt.severity === 'critical' ? 'bg-red-500' : 'bg-amber-400'}`}></div>
                         <div>
-                          <p className="text-sm text-white font-medium leading-tight group-hover:text-[#2684ff] transition-colors">{evt.title}</p>
-                          <div className="flex items-center gap-2 mt-1.5 text-xs text-[#627d9c]">
+                          <p className="text-sm text-white font-medium leading-tight group-hover:text-[var(--color-primary-indigo)] transition-colors">{evt.title}</p>
+                          <div className="flex items-center gap-2 mt-1.5 text-xs text-[var(--color-text-muted)]">
                             <span className="font-mono">{evt.repositoryName}</span>
                             <span>•</span>
                             <span>{new Date(evt.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
@@ -272,16 +281,16 @@ export default function SecurityCenterPage() {
         </div>
 
         {/* Repositories at Risk */}
-        <div className="bg-[#0b1523] border border-[#1b2938] rounded-xl overflow-hidden">
-          <div className="p-5 border-b border-[#1b2938] flex items-center justify-between">
+        <div className="bg-[var(--color-panel)] border border-[var(--color-border)] rounded-xl overflow-hidden">
+          <div className="p-5 border-b border-[var(--color-border)] flex items-center justify-between">
             <h3 className="text-sm font-semibold text-white">Repositories at Risk</h3>
-            <button className="text-xs text-[#2684ff] hover:text-[#1f6bd9] flex items-center gap-1">
+            <button className="text-xs text-[var(--color-primary-indigo)] hover:text-[#1f6bd9] flex items-center gap-1">
               View All <ExternalLink className="w-3 h-3" />
             </button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-[#070e18] text-[#627d9c] text-xs font-semibold uppercase">
+              <thead className="bg-[var(--color-panel)] text-[var(--color-text-muted)] text-xs font-semibold uppercase">
                 <tr>
                   <th className="px-5 py-3 font-medium">Repository</th>
                   <th className="px-5 py-3 font-medium">Owner Team</th>
@@ -291,21 +300,21 @@ export default function SecurityCenterPage() {
                   <th className="px-5 py-3 font-medium text-right">Last Scan</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1b2938]">
+              <tbody className="divide-y divide-[var(--color-border)]">
                 {repos.map(repo => (
                   <tr key={repo.id} className="hover:bg-[#101a28] transition-colors group">
                     <td className="px-5 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <Box className="w-4 h-4 text-[#8eaccb]" />
-                        <span className="font-mono text-white font-medium group-hover:text-[#2684ff] cursor-pointer">{repo.name}</span>
+                        <Box className="w-4 h-4 text-[var(--color-text-secondary)]" />
+                        <span className="font-mono text-white font-medium group-hover:text-[var(--color-primary-indigo)] cursor-pointer">{repo.name}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-4 whitespace-nowrap text-[#8eaccb]">
+                    <td className="px-5 py-4 whitespace-nowrap text-[var(--color-text-secondary)]">
                       {repo.ownerTeam}
                     </td>
                     <td className="px-5 py-4 whitespace-nowrap text-center">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border
-                        ${repo.securityScore >= 80 ? 'bg-[#00d3a0]/10 text-[#00d3a0] border-[#00d3a0]/20' : 
+                        ${repo.securityScore >= 80 ? 'bg-[var(--color-success)]/10 text-[var(--color-success)] border-[var(--color-success)]/20' : 
                           repo.securityScore >= 60 ? 'bg-amber-400/10 text-amber-400 border-amber-400/20' : 
                           'bg-red-500/10 text-red-500 border-red-500/20'}`}>
                         {repo.securityScore}
@@ -313,24 +322,24 @@ export default function SecurityCenterPage() {
                     </td>
                     <td className="px-5 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-1.5">
-                        <div className={`w-1.5 h-1.5 rounded-full ${repo.criticalCount > 0 ? 'bg-red-500' : 'bg-[#1b2938]'}`}></div>
-                        <span className={repo.criticalCount > 0 ? 'text-white' : 'text-[#627d9c]'}>{repo.criticalCount}</span>
+                        <div className={`w-1.5 h-1.5 rounded-full ${repo.criticalCount > 0 ? 'bg-red-500' : 'bg-[var(--color-border)]'}`}></div>
+                        <span className={repo.criticalCount > 0 ? 'text-white' : 'text-[var(--color-text-muted)]'}>{repo.criticalCount}</span>
                       </div>
                     </td>
                     <td className="px-5 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-1.5">
-                        <div className={`w-1.5 h-1.5 rounded-full ${repo.highCount > 0 ? 'bg-amber-400' : 'bg-[#1b2938]'}`}></div>
-                        <span className={repo.highCount > 0 ? 'text-white' : 'text-[#627d9c]'}>{repo.highCount}</span>
+                        <div className={`w-1.5 h-1.5 rounded-full ${repo.highCount > 0 ? 'bg-amber-400' : 'bg-[var(--color-border)]'}`}></div>
+                        <span className={repo.highCount > 0 ? 'text-white' : 'text-[var(--color-text-muted)]'}>{repo.highCount}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-4 whitespace-nowrap text-right text-[#627d9c] text-xs">
+                    <td className="px-5 py-4 whitespace-nowrap text-right text-[var(--color-text-muted)] text-xs">
                       {new Date(repo.lastScanAt).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}
                 {repos.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-5 py-8 text-center text-[#627d9c]">No repositories at risk.</td>
+                    <td colSpan={6} className="px-5 py-8 text-center text-[var(--color-text-muted)]">No repositories at risk.</td>
                   </tr>
                 )}
               </tbody>

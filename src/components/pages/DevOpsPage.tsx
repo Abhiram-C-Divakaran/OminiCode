@@ -1,10 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Play, Cloud, Server, Database, Cpu, Activity, Clock, 
-  Terminal, Power, CheckCircle, XCircle, AlertCircle, CloudLightning,
-  GitBranch
+import {
+Activity,
+AlertCircle,
+CheckCircle,
+CloudLightning,
+Cpu,
+Database,
+GitBranch,
+Play,
+Power,
+Terminal,
+XCircle
 } from 'lucide-react';
-import { DevOpsService, Environment, MetricSample, PipelineRun, LogEvent } from '../../services/devopsService';
+import { useEffect,useRef,useState } from 'react';
+import { DevOpsService,Environment,LogEvent,MetricSample,PipelineRun } from '../../services/devopsService';
 
 export default function DevOpsPage() {
   const [environments, setEnvironments] = useState<Environment[]>([]);
@@ -97,7 +105,7 @@ export default function DevOpsPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#060d17] p-6 lg:p-8 custom-scrollbar">
+    <div className="flex-1 overflow-y-auto bg-[var(--color-background)] p-6 lg:p-8 custom-scrollbar">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
